@@ -10,9 +10,13 @@ import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/usePermissions";
-import { whatsappChatLink, whatsappDigits } from "@/lib/appLinks";
+import { whatsappDigits, whatsappChatLink } from "@/lib/appLinks";
+import { buildBulkWhatsAppQueue, personalizeBulkWhatsAppMessage, WHATSAPP_MESSAGE_TEMPLATES } from "@/lib/bulkWhatsApp";
+import WhatsAppChatButton from "@/components/admin/WhatsAppChatButton";
 import CustomerList from "@/components/admin/CustomerList";
 import AddAdminDialog from "@/components/admin/AddAdminDialog";
 import ElifeRoleSyncButton from "@/components/admin/ElifeRoleSyncButton";
@@ -113,6 +117,15 @@ const UsersPage = () => {
   const [resetUser, setResetUser] = useState<Profile | null>(null);
   const [resetForm, setResetForm] = useState({ new_password: "", confirm_password: "" });
   const [resetting, setResetting] = useState(false);
+
+  // Selling-partner WhatsApp messaging
+  const [selectedSellerIds, setSelectedSellerIds] = useState<Set<string>>(new Set());
+  const [bulkMessageOpen, setBulkMessageOpen] = useState(false);
+  const [bulkMessage, setBulkMessage] = useState(WHATSAPP_MESSAGE_TEMPLATES[0].text("{{name}}"));
+  const [bulkRecipients, setBulkRecipients] = useState<(Profile & { whatsappDigits: string })[]>([]);
+  const [bulkSkippedCount, setBulkSkippedCount] = useState(0);
+  const [bulkRecipientIndex, setBulkRecipientIndex] = useState(0);
+  const [bulkCurrentOpened, setBulkCurrentOpened] = useState(false);
 
   const fetchData = async () => {
     const [usersRes, rolesRes, localBodiesRes, districtsRes, ordersRes, walletsRes] = await Promise.all([
@@ -269,13 +282,54 @@ const UsersPage = () => {
     else { toast({ title: `Marked as ${sellerType === "utility" ? "utility seller" : "normal seller"}` }); fetchData(); }
   };
 
-  const openSellerWhatsApp = (user: Profile) => {
-    const digits = whatsappDigits(user.mobile_number);
-    if (!digits) {
-      toast({ title: "No valid WhatsApp number", description: "Add a valid mobile number for this selling partner.", variant: "destructive" });
+  const beginBulkSellerMessaging = () => {
+    const { recipients, skippedCount } = buildBulkWhatsAppQueue(Array.from(selectedSellerIds), filteredUsers);
+    if (recipients.length === 0) {
+      toast({ title: "No WhatsApp numbers available", description: "Select selling partners with valid mobile numbers to continue.", variant: "destructive" });
       return;
     }
-    window.open(whatsappChatLink(digits, ""), "_blank", "noopener,noreferrer");
+    setBulkRecipients(recipients);
+    setBulkSkippedCount(skippedCount);
+    setBulkRecipientIndex(0);
+    setBulkCurrentOpened(false);
+    setBulkMessageOpen(true);
+  };
+
+  const toggleSellerSelection = (userId: string, selected: boolean) => {
+    setSelectedSellerIds((previous) => {
+      const next = new Set(previous);
+      if (selected) next.add(userId);
+      else next.delete(userId);
+      return next;
+    });
+  };
+
+  const toggleSellerPageSelection = (selected: boolean) => {
+    setSelectedSellerIds((previous) => {
+      const next = new Set(previous);
+      paginatedUsers.forEach((seller) => {
+        if (selected) next.add(seller.user_id);
+        else next.delete(seller.user_id);
+      });
+      return next;
+    });
+  };
+
+  const advanceBulkSellerRecipient = () => {
+    const currentRecipient = bulkRecipients[bulkRecipientIndex];
+    if (!currentRecipient) return;
+    setSelectedSellerIds((previous) => {
+      const next = new Set(previous);
+      next.delete(currentRecipient.user_id);
+      return next;
+    });
+    if (bulkRecipientIndex >= bulkRecipients.length - 1) {
+      setBulkMessageOpen(false);
+      setBulkRecipients([]);
+      return;
+    }
+    setBulkRecipientIndex((index) => index + 1);
+    setBulkCurrentOpened(false);
   };
 
   const openEditDialog = (user: Profile) => {
@@ -636,6 +690,31 @@ const UsersPage = () => {
         <CustomerList customers={filteredUsers} orderSummaries={orderSummaries} walletSummaries={walletSummaries} onRefresh={fetchData} />
       ) : (
         <>
+          {filterType === "selling_partner" && (
+            <div className="mb-3 flex flex-wrap items-center gap-3 border-y py-3">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="select-seller-page"
+                  checked={paginatedUsers.length > 0 && paginatedUsers.every((seller) => selectedSellerIds.has(seller.user_id))}
+                  onCheckedChange={(checked) => toggleSellerPageSelection(checked === true)}
+                  aria-label="Select all selling partners on this page"
+                />
+                <Label htmlFor="select-seller-page" className="text-sm">Select this page</Label>
+              </div>
+              <Button type="button" variant="outline" size="sm" onClick={() => setSelectedSellerIds(new Set(filteredUsers.map((seller) => seller.user_id)))}>
+                Select all filtered ({filteredUsers.length})
+              </Button>
+              <Button type="button" variant="ghost" size="sm" disabled={selectedSellerIds.size === 0} onClick={() => setSelectedSellerIds(new Set())}>
+                Clear selection
+              </Button>
+              <div className="ml-auto flex flex-wrap items-center gap-2">
+                <span className="text-sm text-muted-foreground">{selectedSellerIds.size} selected</span>
+                <Button type="button" size="sm" disabled={selectedSellerIds.size === 0} onClick={beginBulkSellerMessaging}>
+                  <MessageCircle className="mr-2 h-4 w-4" /> Message selected
+                </Button>
+              </div>
+            </div>
+          )}
           {filteredUsers.length === 0 ? (
             <p className="py-12 text-center text-muted-foreground">No users found</p>
           ) : (
@@ -649,6 +728,14 @@ const UsersPage = () => {
                       <div className="truncate text-xs text-muted-foreground">{u.mobile_number ?? u.email ?? "—"}</div>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
+                      {filterType === "selling_partner" && (
+                        <Checkbox
+                          checked={selectedSellerIds.has(u.user_id)}
+                          onCheckedChange={(checked) => toggleSellerSelection(u.user_id, checked === true)}
+                          onClick={(event) => event.stopPropagation()}
+                          aria-label={`Select ${u.full_name || "selling partner"}`}
+                        />
+                      )}
                       <Badge variant={getTypeBadgeVariant(u.user_type)}>{USER_TYPE_LABELS[u.user_type] ?? u.user_type}</Badge>
                       <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-90" />
                     </div>
@@ -701,9 +788,10 @@ const UsersPage = () => {
                     <div className="flex flex-wrap gap-2 pt-1">
                       <Button variant="outline" size="sm" onClick={() => openEditDialog(u)}><Pencil className="mr-1 h-3.5 w-3.5" /> Edit</Button>
                       {u.user_type === "selling_partner" && (
-                        <Button variant="outline" size="sm" onClick={() => openSellerWhatsApp(u)} disabled={!whatsappDigits(u.mobile_number)}>
-                          <MessageCircle className="mr-1 h-3.5 w-3.5" /> WhatsApp
-                        </Button>
+                        <div className="flex items-center gap-1 rounded-md border px-2 text-sm">
+                          <span>WhatsApp</span>
+                          <WhatsAppChatButton name={u.full_name} mobile={u.mobile_number} />
+                        </div>
                       )}
                       {u.user_type !== "customer" && (
                         <Button variant="outline" size="sm" onClick={() => { setResetUser(u); setResetForm({ new_password: "", confirm_password: "" }); }}>
@@ -725,6 +813,7 @@ const UsersPage = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>User</TableHead>
+                    {filterType === "selling_partner" && <TableHead className="w-10" aria-label="Select partners" />}
                     <TableHead>Contact</TableHead>
                     <TableHead>District</TableHead>
                     <TableHead>Panchayath</TableHead>
@@ -739,14 +828,23 @@ const UsersPage = () => {
                 </TableHeader>
                 <TableBody>
                   {paginatedUsers.map((u) => (
-                    <TableRow key={u.id}>
+                  <TableRow key={u.id}>
                       <TableCell>
                         <div className="font-medium">{u.full_name ?? "—"}</div>
                         {u.customer_id && <div className="text-[10px] font-mono text-muted-foreground">{u.customer_id}</div>}
                       </TableCell>
+                      {filterType === "selling_partner" && (
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedSellerIds.has(u.user_id)}
+                            onCheckedChange={(checked) => toggleSellerSelection(u.user_id, checked === true)}
+                            aria-label={`Select ${u.full_name || "selling partner"}`}
+                          />
+                        </TableCell>
+                      )}
                       <TableCell>
                         <div className="text-sm">{u.email ?? "—"}</div>
-                        {u.mobile_number && <div className="text-xs text-muted-foreground">{u.mobile_number}</div>}
+                        {u.mobile_number && <div className="flex items-center gap-1 text-xs text-muted-foreground">{u.mobile_number}{u.user_type === "selling_partner" && <WhatsAppChatButton name={u.full_name} mobile={u.mobile_number} />}</div>}
                       </TableCell>
                       <TableCell><span className="text-xs text-muted-foreground">{u.district_name ?? "—"}</span></TableCell>
                       <TableCell><span className="text-xs text-muted-foreground">{u.local_body_name ?? "—"}</span></TableCell>
@@ -802,8 +900,8 @@ const UsersPage = () => {
                               <Pencil className="h-4 w-4 mr-2" /> Edit
                             </DropdownMenuItem>
                             {u.user_type === "selling_partner" && (
-                              <DropdownMenuItem disabled={!whatsappDigits(u.mobile_number)} onClick={() => openSellerWhatsApp(u)}>
-                                <MessageCircle className="h-4 w-4 mr-2" /> WhatsApp chat
+                              <DropdownMenuItem disabled={!whatsappDigits(u.mobile_number)} onSelect={(event) => event.preventDefault()}>
+                                <MessageCircle className="h-4 w-4 mr-2" /> Use WhatsApp button in contact
                               </DropdownMenuItem>
                             )}
                             {u.user_type !== "customer" && (
@@ -1024,6 +1122,65 @@ const UsersPage = () => {
             <Button onClick={handleResetPassword} disabled={resetting || !resetForm.new_password || !resetForm.confirm_password}>
               {resetting ? "Resetting..." : "Reset Password"}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={bulkMessageOpen} onOpenChange={setBulkMessageOpen}>
+        <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageCircle className="h-4 w-4" /> Message selling partners on WhatsApp
+            </DialogTitle>
+          </DialogHeader>
+          {bulkRecipients[bulkRecipientIndex] && (
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <p className="font-medium">{bulkRecipients[bulkRecipientIndex].full_name || "Selling partner"}</p>
+                <p className="text-sm text-muted-foreground">{bulkRecipients[bulkRecipientIndex].mobile_number}</p>
+                <p className="text-xs text-muted-foreground">
+                  Partner {bulkRecipientIndex + 1} of {bulkRecipients.length}
+                  {bulkSkippedCount > 0 ? ` · ${bulkSkippedCount} selected without a valid WhatsApp number will be skipped` : ""}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {WHATSAPP_MESSAGE_TEMPLATES.map((template) => (
+                  <Button key={template.label} type="button" size="sm" variant="outline" onClick={() => setBulkMessage(template.text("{{name}}"))}>
+                    {template.label}
+                  </Button>
+                ))}
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="seller-bulk-whatsapp-message">Message</Label>
+                <Textarea id="seller-bulk-whatsapp-message" rows={5} value={bulkMessage} onChange={(event) => setBulkMessage(event.target.value)} />
+                <p className="text-xs text-muted-foreground"><code>{"{{name}}"}</code> is replaced with each partner's name. WhatsApp opens one chat at a time; send each message in WhatsApp.</p>
+              </div>
+            </div>
+          )}
+          <DialogFooter className="flex-wrap justify-between gap-2 sm:justify-between">
+            <Button type="button" variant="outline" onClick={() => setBulkMessageOpen(false)}>Stop</Button>
+            <div className="flex flex-wrap justify-end gap-2">
+              <Button type="button" variant="ghost" onClick={advanceBulkSellerRecipient}>Skip partner</Button>
+              {!bulkCurrentOpened ? (
+                <Button
+                  type="button"
+                  disabled={!bulkMessage.trim() || !bulkRecipients[bulkRecipientIndex]}
+                  onClick={() => {
+                    const recipient = bulkRecipients[bulkRecipientIndex];
+                    if (!recipient) return;
+                    const personalized = personalizeBulkWhatsAppMessage(bulkMessage.trim(), recipient.full_name);
+                    window.open(whatsappChatLink(recipient.whatsappDigits, personalized), "_blank", "noopener,noreferrer");
+                    setBulkCurrentOpened(true);
+                  }}
+                >
+                  <MessageCircle className="mr-2 h-4 w-4" /> Open WhatsApp
+                </Button>
+              ) : (
+                <Button type="button" onClick={advanceBulkSellerRecipient}>
+                  {bulkRecipientIndex === bulkRecipients.length - 1 ? "Finish" : "Next partner"}
+                </Button>
+              )}
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>

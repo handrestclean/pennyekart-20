@@ -18,4 +18,18 @@ describe("bulk WhatsApp messaging", () => {
     ]);
     expect(result.skippedCount).toBe(2);
   });
+
+  it("queues multiple selected selling partners and personalizes each message", () => {
+    const result = buildBulkWhatsAppQueue(["seller-1", "seller-2"], [
+      { user_id: "seller-1", full_name: "Asha Stores", mobile_number: "+91 98765 43210" },
+      { user_id: "seller-2", full_name: "Nila Mart", mobile_number: "9876543211" },
+    ]);
+
+    expect(result.recipients.map((seller) => personalizeBulkWhatsAppMessage("Hello {{name}}", seller.full_name))).toEqual([
+      "Hello Asha Stores",
+      "Hello Nila Mart",
+    ]);
+    expect(result.recipients).toHaveLength(2);
+    expect(result.skippedCount).toBe(0);
+  });
 });
