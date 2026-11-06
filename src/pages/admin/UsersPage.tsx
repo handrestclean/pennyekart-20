@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/usePermissions";
+import { whatsappChatLink, whatsappDigits } from "@/lib/appLinks";
 import CustomerList from "@/components/admin/CustomerList";
 import AddAdminDialog from "@/components/admin/AddAdminDialog";
 import ElifeRoleSyncButton from "@/components/admin/ElifeRoleSyncButton";
@@ -266,6 +267,15 @@ const UsersPage = () => {
     const { error } = await supabase.from("profiles").update({ seller_type: sellerType }).eq("user_id", userId);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else { toast({ title: `Marked as ${sellerType === "utility" ? "utility seller" : "normal seller"}` }); fetchData(); }
+  };
+
+  const openSellerWhatsApp = (user: Profile) => {
+    const digits = whatsappDigits(user.mobile_number);
+    if (!digits) {
+      toast({ title: "No valid WhatsApp number", description: "Add a valid mobile number for this selling partner.", variant: "destructive" });
+      return;
+    }
+    window.open(whatsappChatLink(digits, ""), "_blank", "noopener,noreferrer");
   };
 
   const openEditDialog = (user: Profile) => {
@@ -690,6 +700,11 @@ const UsersPage = () => {
                     )}
                     <div className="flex flex-wrap gap-2 pt-1">
                       <Button variant="outline" size="sm" onClick={() => openEditDialog(u)}><Pencil className="mr-1 h-3.5 w-3.5" /> Edit</Button>
+                      {u.user_type === "selling_partner" && (
+                        <Button variant="outline" size="sm" onClick={() => openSellerWhatsApp(u)} disabled={!whatsappDigits(u.mobile_number)}>
+                          <MessageCircle className="mr-1 h-3.5 w-3.5" /> WhatsApp
+                        </Button>
+                      )}
                       {u.user_type !== "customer" && (
                         <Button variant="outline" size="sm" onClick={() => { setResetUser(u); setResetForm({ new_password: "", confirm_password: "" }); }}>
                           <KeyRound className="mr-1 h-3.5 w-3.5" /> Password
@@ -786,6 +801,11 @@ const UsersPage = () => {
                             <DropdownMenuItem onClick={() => openEditDialog(u)}>
                               <Pencil className="h-4 w-4 mr-2" /> Edit
                             </DropdownMenuItem>
+                            {u.user_type === "selling_partner" && (
+                              <DropdownMenuItem disabled={!whatsappDigits(u.mobile_number)} onClick={() => openSellerWhatsApp(u)}>
+                                <MessageCircle className="h-4 w-4 mr-2" /> WhatsApp chat
+                              </DropdownMenuItem>
+                            )}
                             {u.user_type !== "customer" && (
                               <DropdownMenuItem onClick={() => { setResetUser(u); setResetForm({ new_password: "", confirm_password: "" }); }}>
                                 <KeyRound className="h-4 w-4 mr-2" /> Reset Password
