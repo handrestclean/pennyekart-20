@@ -16,6 +16,7 @@ import { Plus, Pencil, Trash2, ExternalLink, Clock, Store, CheckCircle, XCircle,
 import ImageUpload from "@/components/admin/ImageUpload";
 import ProductVariants from "@/components/admin/ProductVariants";
 import MicroGodownAssignDialog from "@/components/admin/MicroGodownAssignDialog";
+import WhatsAppChatButton from "@/components/admin/WhatsAppChatButton";
 import { Warehouse } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getSellerProductPage, type SellerProductApprovalFilter } from "@/lib/sellerProductList";
@@ -101,6 +102,7 @@ const ProductsPage = () => {
     business_pincode: string | null;
     business_phone: string | null;
     business_email: string | null;
+    mobile_number: string | null;
     full_name: string | null;
     gst_number: string | null;
   } | null>(null);
@@ -774,7 +776,7 @@ const ProductsPage = () => {
                         </div>
                       )}
                       <div className="flex gap-1 pt-1 border-t">
-                        <Button variant="ghost" size="sm" onClick={async () => { setDetailProduct(p); setDetailType("seller"); const { data } = await supabase.from("profiles").select("company_name, business_address, business_city, business_state, business_pincode, business_phone, business_email, full_name, gst_number").eq("user_id", p.seller_id).single(); setDetailSellerInfo(data); }}><Eye className="h-3.5 w-3.5" /></Button>
+                        <Button variant="ghost" size="sm" onClick={async () => { setDetailProduct(p); setDetailType("seller"); const { data } = await supabase.from("profiles").select("company_name, business_address, business_city, business_state, business_pincode, business_phone, business_email, mobile_number, full_name, gst_number").eq("user_id", p.seller_id).single(); setDetailSellerInfo(data); }}><Eye className="h-3.5 w-3.5" /></Button>
                         <Button variant="ghost" size="sm" onClick={() => openSellerEdit(p)}><Pencil className="h-3.5 w-3.5" /></Button>
                         <Button variant="ghost" size="sm" onClick={() => handleSellerDelete(p.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
                         <Button variant={p.is_approved ? "outline" : "default"} size="sm" onClick={() => toggleSellerApproval(p)} className="ml-auto">
@@ -821,7 +823,7 @@ const ProductsPage = () => {
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-1 flex-wrap">
-                              <Button variant="ghost" size="sm" onClick={async () => { setDetailProduct(p); setDetailType("seller"); const { data } = await supabase.from("profiles").select("company_name, business_address, business_city, business_state, business_pincode, business_phone, business_email, full_name, gst_number").eq("user_id", p.seller_id).single(); setDetailSellerInfo(data); }}><Eye className="h-3.5 w-3.5" /></Button>
+                              <Button variant="ghost" size="sm" onClick={async () => { setDetailProduct(p); setDetailType("seller"); const { data } = await supabase.from("profiles").select("company_name, business_address, business_city, business_state, business_pincode, business_phone, business_email, mobile_number, full_name, gst_number").eq("user_id", p.seller_id).single(); setDetailSellerInfo(data); }}><Eye className="h-3.5 w-3.5" /></Button>
                               <Button variant="ghost" size="sm" onClick={() => openSellerEdit(p)}>
                                 <Pencil className="h-3.5 w-3.5" />
                               </Button>
@@ -1006,8 +1008,20 @@ const ProductsPage = () => {
                     {detailSellerInfo.gst_number && (
                       <><span className="text-muted-foreground">GST Number:</span><span className="font-medium">{detailSellerInfo.gst_number}</span></>
                     )}
-                    {detailSellerInfo.business_phone && (
-                      <><span className="text-muted-foreground">Phone:</span><span className="font-medium">{detailSellerInfo.business_phone}</span></>
+                    {(detailSellerInfo.business_phone || detailSellerInfo.mobile_number) && (
+                      <>
+                        <span className="text-muted-foreground">Phone:</span>
+                        <div className="flex items-center gap-2 font-medium">
+                          <span>{detailSellerInfo.business_phone || detailSellerInfo.mobile_number}</span>
+                          <WhatsAppChatButton
+                            name={detailSellerInfo.full_name || detailSellerInfo.company_name}
+                            mobile={detailSellerInfo.business_phone || detailSellerInfo.mobile_number}
+                          />
+                        </div>
+                      </>
+                    )}
+                    {detailSellerInfo.business_phone && detailSellerInfo.mobile_number && detailSellerInfo.business_phone !== detailSellerInfo.mobile_number && (
+                      <><span className="text-muted-foreground">Mobile:</span><span className="font-medium">{detailSellerInfo.mobile_number}</span></>
                     )}
                     {detailSellerInfo.business_email && (
                       <><span className="text-muted-foreground">Email:</span><span className="font-medium">{detailSellerInfo.business_email}</span></>
