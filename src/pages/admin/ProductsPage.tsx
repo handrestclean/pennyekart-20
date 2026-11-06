@@ -1015,7 +1015,7 @@ const ProductsPage = () => {
                           <span>{detailSellerInfo.business_phone || detailSellerInfo.mobile_number}</span>
                           <WhatsAppChatButton
                             name={detailSellerInfo.full_name || detailSellerInfo.company_name}
-                            mobile={detailSellerInfo.business_phone || detailSellerInfo.mobile_number}
+                            mobile={detailSellerInfo.mobile_number || detailSellerInfo.business_phone}
                           />
                         </div>
                       </>
