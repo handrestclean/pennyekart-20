@@ -1,5 +1,8 @@
 # Roadmap
 
+## Admin users: Selling Partner WhatsApp chat
+- [ ] Add a per-partner WhatsApp chat action in `/admin/users`, using the saved mobile number and keeping chats user-initiated.
+
 ## Shared WhatsApp links open the installed Android app
 - [x] Product share links (product detail + Penny Prime coupon share) share `https://www.pennyekart.com/product/<id>` on the canonical SITE_URL instead of the Supabase product-og URL; community invite, referral and verification links also build on SITE_URL, not window.location.origin.
 - [x] WhatsApp previews keep real product OG tags: vercel.json rewrites /product/:id to product-og only for bot user-agents, so humans still get the SPA and app taps never pass through a redirect.
