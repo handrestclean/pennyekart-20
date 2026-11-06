@@ -1,7 +1,7 @@
 # Roadmap
 
 ## Admin users: Selling Partner WhatsApp chat
-- [ ] Add a per-partner WhatsApp chat action in `/admin/users`, using the saved mobile number and keeping chats user-initiated.
+- [x] Add a per-partner WhatsApp chat action in `/admin/users`, using the saved mobile number and keeping chats user-initiated; invalid numbers cannot launch a chat.
 
 ## Shared WhatsApp links open the installed Android app
 - [x] Product share links (product detail + Penny Prime coupon share) share `https://www.pennyekart.com/product/<id>` on the canonical SITE_URL instead of the Supabase product-og URL; community invite, referral and verification links also build on SITE_URL, not window.location.origin.
