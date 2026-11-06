@@ -728,6 +728,14 @@ const UsersPage = () => {
                       <div className="truncate text-xs text-muted-foreground">{u.mobile_number ?? u.email ?? "—"}</div>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
+                      {filterType === "selling_partner" && (
+                        <Checkbox
+                          checked={selectedSellerIds.has(u.user_id)}
+                          onCheckedChange={(checked) => toggleSellerSelection(u.user_id, checked === true)}
+                          onClick={(event) => event.stopPropagation()}
+                          aria-label={`Select ${u.full_name || "selling partner"}`}
+                        />
+                      )}
                       <Badge variant={getTypeBadgeVariant(u.user_type)}>{USER_TYPE_LABELS[u.user_type] ?? u.user_type}</Badge>
                       <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-90" />
                     </div>
@@ -820,7 +828,11 @@ const UsersPage = () => {
                 </TableHeader>
                 <TableBody>
                   {paginatedUsers.map((u) => (
-                    <TableRow key={u.id}>
+                  <TableRow key={u.id}>
+                      <TableCell>
+                        <div className="font-medium">{u.full_name ?? "—"}</div>
+                        {u.customer_id && <div className="text-[10px] font-mono text-muted-foreground">{u.customer_id}</div>}
+                      </TableCell>
                       {filterType === "selling_partner" && (
                         <TableCell>
                           <Checkbox
@@ -830,10 +842,6 @@ const UsersPage = () => {
                           />
                         </TableCell>
                       )}
-                      <TableCell>
-                        <div className="font-medium">{u.full_name ?? "—"}</div>
-                        {u.customer_id && <div className="text-[10px] font-mono text-muted-foreground">{u.customer_id}</div>}
-                      </TableCell>
                       <TableCell>
                         <div className="text-sm">{u.email ?? "—"}</div>
                         {u.mobile_number && <div className="flex items-center gap-1 text-xs text-muted-foreground">{u.mobile_number}{u.user_type === "selling_partner" && <WhatsAppChatButton name={u.full_name} mobile={u.mobile_number} />}</div>}
