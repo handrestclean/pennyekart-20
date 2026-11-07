@@ -9,6 +9,7 @@ const config: CapacitorConfig = {
   // app instantly without publishing a new APK/AAB.
   server: {
     url: "https://www.pennyekart.com",
+    errorPath: "offline.html",
     cleartext: false,
   },
 

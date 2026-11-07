@@ -1,5 +1,7 @@
 # Architecture rules
 
+- Keep the Android app pointed at the live Pennyekart website, and use a bundled `server.errorPath` page for main-frame load failures so offline launches avoid the WebView error screen without changing release/update behavior.
+
 - Resolve community eligibility on the server from protected user_roles with a legacy-role fallback; approve requests atomically in a super-admin-checked RPC, and synchronize existing administrator role changes so grants cannot diverge.
 - Keep community access requests separate from membership invitations; the profile wrapper gates the existing community card and the active admin Communities page hosts the review queue.
 - Keep community access-request search/status filtering in the admin table and generate CSV from the currently visible rows through a testable export helper.
