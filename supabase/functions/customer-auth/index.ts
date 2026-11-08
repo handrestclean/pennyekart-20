@@ -45,13 +45,39 @@ Deno.serve(async (req) => {
   };
 
   if (body.action === "login") {
+    const deviceId = String(body.device_id ?? "").slice(0, 100) || null;
+    const deviceName = String(body.device_name ?? "").slice(0, 200) || null;
+    const userAgent = (req.headers.get("user-agent") ?? "").slice(0, 300);
+    const audit = async (event_type: string, is_suspicious: boolean, reason: string, user_id: string | null = null) => {
+      try {
+        await admin.from("customer_auth_audit_logs").insert({
+          user_id, mobile_number: mobile, device_id: deviceId, device_name: deviceName,
+          ip_address: ip, user_agent: userAgent, event_type, is_suspicious, reason,
+        });
+      } catch { /* never block login on audit failure */ }
+    };
     const { data: p } = await admin.from("profiles")
       .select("user_id, user_type, is_super_admin, is_blocked, password_status")
       .eq("email", email).maybeSingle();
-    if (!p) return json({ status: "not_registered" });
+    if (!p) { await audit("unregistered_attempt", false, "Login tried with an unregistered number"); return json({ status: "not_registered" }); }
     // Only plain customer accounts can use mobile-only sign-in.
-    if (p.user_type !== "customer" || p.is_super_admin) return json({ error: "Please use the partner or admin login for this account" }, 403);
-    if (p.is_blocked) return json({ error: "This account is blocked. Please contact support." }, 403);
+    if (p.user_type !== "customer" || p.is_super_admin) {
+      await audit("unauthorized_role_attempt", true, "Customer login tried on a partner/admin account", p.user_id);
+      return json({ error: "Please use the partner or admin login for this account" }, 403);
+    }
+    if (p.is_blocked) {
+      await audit("blocked_login_attempt", true, "Login tried on a blocked account", p.user_id);
+      return json({ error: "This account is blocked. Please contact support." }, 403);
+    }
+
+    // Device tracking (warning only, never blocks).
+    const { data: prev } = await admin.from("customer_auth_audit_logs")
+      .select("device_id").eq("user_id", p.user_id).not("device_id", "is", null).limit(1000);
+    const known = new Set((prev ?? []).map((r: { device_id: string }) => r.device_id));
+    const isNewDevice = !!deviceId && known.size > 0 && !known.has(deviceId);
+    const deviceCount = known.size + (deviceId && !known.has(deviceId) ? 1 : 0);
+    if (isNewDevice) await audit("multiple_devices", true, `Login from a new device (${deviceCount} devices used)`, p.user_id);
+    else await audit("login_success", false, known.size === 0 ? "First device" : "Known device", p.user_id);
 
     // Retire the old shared password for this account (no action needed from the customer).
     if (p.password_status === "legacy") {
@@ -60,7 +86,7 @@ Deno.serve(async (req) => {
     }
     const session = await mintSession();
     if (!session) return json({ error: "Login temporarily unavailable. Please try again." }, 500);
-    return json({ status: "ok", ...session });
+    return json({ status: "ok", is_new_device: isNewDevice, ...session });
   }
 
   if (body.action === "signup") {
