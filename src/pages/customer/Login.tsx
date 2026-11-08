@@ -39,7 +39,11 @@ const CustomerLogin = () => {
     }, 15000);
 
     try {
-      const { data, error } = await supabase.functions.invoke("customer-auth", { body: { action: "login", mobile } });
+      let deviceId = localStorage.getItem("pk_device_id");
+      if (!deviceId) { deviceId = crypto.randomUUID(); localStorage.setItem("pk_device_id", deviceId); }
+      const ua = navigator.userAgent;
+      const deviceName = /Android/i.test(ua) ? (ua.match(/Android[^;)]*;\s*([^;)]+)/)?.[1] ?? "Android") : /iPhone|iPad/i.test(ua) ? "iOS" : /Windows/i.test(ua) ? "Windows" : /Mac/i.test(ua) ? "Mac" : "Web";
+      const { data, error } = await supabase.functions.invoke("customer-auth", { body: { action: "login", mobile, device_id: deviceId, device_name: deviceName } });
       clearTimeout(timeoutRef.current);
 
       if (data?.status === "not_registered") {
@@ -57,6 +61,7 @@ const CustomerLogin = () => {
       }
       await supabase.auth.setSession({ access_token: data.access_token, refresh_token: data.refresh_token });
       setLoading(false);
+      if (data.is_new_device) toast({ title: "New device login", description: "Your account was opened on a new device. If this wasn't you, contact support." });
       const next = searchParams.get("next");
       navigate(next && next.startsWith("/") ? next : "/");
     } catch (err) {

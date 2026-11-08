@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { CalendarIcon, Filter, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import AdminLayout from "@/components/admin/AdminLayout";
+import SecurityAuditTab from "@/components/admin/SecurityAuditTab";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -1195,6 +1196,7 @@ const ReportsPage = () => {
           <TabsTrigger value="search">Search</TabsTrigger>
           <TabsTrigger value="customers">Customers</TabsTrigger>
           <TabsTrigger value="community">Community</TabsTrigger>
+          <TabsTrigger value="security">Security Audit</TabsTrigger>
         </TabsList>
 
         {/* ── OVERVIEW ── */}
@@ -1965,6 +1967,7 @@ const ReportsPage = () => {
           </CollapsibleSection>
         </TabsContent>
 
+        <TabsContent value="security"><SecurityAuditTab /></TabsContent>
         <TabsContent value="community" className="space-y-6">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard label="Total Communities" value={String(communityAnalytics.rows.length)} icon={Network} {...cardClick("Communities", () => communityTable())} />
