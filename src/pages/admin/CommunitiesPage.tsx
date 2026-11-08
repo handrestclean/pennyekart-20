@@ -26,6 +26,7 @@ import { Users, IndianRupee, TrendingUp, Percent, Download, Loader2, Crown, Save
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { commissionForProfit, isValidCommissionRule, type CommissionRule } from "@/lib/communityCommission";
+import { filterCommunityRowsByArea } from "@/lib/communityList";
 
 const COMMISSION_KEY = "community_creator_commission_percent";
 const COMMISSION_RULES_KEY = "community_creator_commission_rules";
@@ -37,6 +38,9 @@ interface SummaryRow {
   creator_name: string | null;
   creator_mobile: string | null;
   creator_role_id: string | null;
+  creator_area_id: string | null;
+  creator_area_name: string | null;
+  creator_ward_number: number | null;
   member_count: number;
   order_count: number;
   revenue: number;
@@ -59,6 +63,11 @@ interface MemberRow {
 }
 
 interface RoleRow {
+  id: string;
+  name: string;
+}
+
+interface AreaOption {
   id: string;
   name: string;
 }
@@ -94,6 +103,8 @@ const CommunitiesPage = () => {
   const { isSuperAdmin } = usePermissions();
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState<SummaryRow[]>([]);
+  const [areaOptions, setAreaOptions] = useState<AreaOption[]>([]);
+  const [panchayathFilter, setPanchayathFilter] = useState("all");
   const [period, setPeriod] = useState<Period>("this_month");
   const [customFrom, setCustomFrom] = useState(toISODate(new Date(new Date().getFullYear(), new Date().getMonth(), 1)));
   const [customTo, setCustomTo] = useState(toISODate(new Date()));
@@ -132,13 +143,27 @@ const CommunitiesPage = () => {
     if (error) toast.error(error.message.replace(/^.*?:\s*/, ""));
     const summaries = (data as SummaryRow[] | null) ?? [];
     const creatorIds = [...new Set(summaries.map((r) => r.creator_user_id).filter(Boolean))];
-    const { data: creatorProfiles } = creatorIds.length
-      ? await supabase.from("profiles").select("user_id, role_id").in("user_id", creatorIds)
-      : { data: [] };
-    const roleByCreator = new Map((creatorProfiles ?? []).map((profile) => [profile.user_id, profile.role_id]));
+    const profileQuery = creatorIds.length
+      ? supabase.from("profiles").select("user_id, role_id, full_name, mobile_number, local_body_id, ward_number").in("user_id", creatorIds)
+      : Promise.resolve({ data: [] });
+    const [profileResult, areaResult] = await Promise.all([
+      profileQuery,
+      supabase.from("locations_local_bodies").select("id, name").eq("is_active", true).order("name"),
+    ]);
+    if (profileResult.error) toast.error(profileResult.error.message);
+    if (areaResult.error) toast.error(areaResult.error.message);
+    const creatorProfiles = profileResult.data ?? [];
+    const profileByCreator = new Map(creatorProfiles.map((profile) => [profile.user_id, profile]));
+    const areaById = new Map((areaResult.data ?? []).map((area) => [area.id, area.name]));
+    setAreaOptions((areaResult.data ?? []) as AreaOption[]);
     setRows(summaries.map((r) => ({
       ...r,
-      creator_role_id: roleByCreator.get(r.creator_user_id) ?? null,
+      creator_name: profileByCreator.get(r.creator_user_id)?.full_name ?? r.creator_name,
+      creator_mobile: profileByCreator.get(r.creator_user_id)?.mobile_number ?? r.creator_mobile,
+      creator_role_id: profileByCreator.get(r.creator_user_id)?.role_id ?? null,
+      creator_area_id: profileByCreator.get(r.creator_user_id)?.local_body_id ?? null,
+      creator_area_name: areaById.get(profileByCreator.get(r.creator_user_id)?.local_body_id ?? "") ?? null,
+      creator_ward_number: profileByCreator.get(r.creator_user_id)?.ward_number ?? null,
       revenue: Number(r.revenue),
       cost: Number(r.cost),
       profit: Number(r.profit),
@@ -296,13 +321,13 @@ const CommunitiesPage = () => {
   };
 
   const totals = useMemo(() => {
-    const revenue = rows.reduce((s, r) => s + r.revenue, 0);
-    const profit = rows.reduce((s, r) => s + r.profit, 0);
-    const memberCount = rows.reduce((s, r) => s + r.member_count, 0);
-    const orderCount = rows.reduce((s, r) => s + r.order_count, 0);
-    const commission = rows.reduce((sum, row) => sum + communityCommission(row), 0);
+    const revenue = visibleRows.reduce((s, r) => s + r.revenue, 0);
+    const profit = visibleRows.reduce((s, r) => s + r.profit, 0);
+    const memberCount = visibleRows.reduce((s, r) => s + r.member_count, 0);
+    const orderCount = visibleRows.reduce((s, r) => s + r.order_count, 0);
+    const commission = visibleRows.reduce((sum, row) => sum + communityCommission(row), 0);
     return { revenue, profit, memberCount, orderCount, commission };
-  }, [rows, pct, rules]);
+  }, [visibleRows, pct, rules]);
 
   const exportMembers = (row: SummaryRow) => {
 
