@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/usePermissions";
 import { whatsappDigits, whatsappChatLink } from "@/lib/appLinks";
 import { buildBulkWhatsAppQueue, personalizeBulkWhatsAppMessage, WHATSAPP_MESSAGE_TEMPLATES } from "@/lib/bulkWhatsApp";
+import { fetchAllRowsInBatches } from "@/lib/fetchAllRowsInBatches";
 import WhatsAppChatButton from "@/components/admin/WhatsAppChatButton";
 import CustomerList from "@/components/admin/CustomerList";
 import AddAdminDialog from "@/components/admin/AddAdminDialog";
@@ -128,71 +129,76 @@ const UsersPage = () => {
   const [bulkCurrentOpened, setBulkCurrentOpened] = useState(false);
 
   const fetchData = async () => {
-    const [usersRes, rolesRes, localBodiesRes, districtsRes, ordersRes, walletsRes] = await Promise.all([
-      supabase.from("profiles").select("*"),
-      supabase.from("roles").select("*"),
-      supabase.from("locations_local_bodies").select("id, name, body_type, district_id, ward_count"),
-      supabase.from("locations_districts").select("id, name"),
-      supabase.from("orders").select("user_id, total, status, created_at"),
-      supabase.from("customer_wallets").select("customer_user_id, balance"),
-    ]);
+    try {
+      const [allProfiles, rolesRes, localBodiesRes, districtsRes, allOrders, allWallets] = await Promise.all([
+        fetchAllRowsInBatches((from, to) => supabase.from("profiles").select("*").range(from, to)),
+        supabase.from("roles").select("*"),
+        supabase.from("locations_local_bodies").select("id, name, body_type, district_id, ward_count"),
+        supabase.from("locations_districts").select("id, name"),
+        fetchAllRowsInBatches((from, to) => supabase.from("orders").select("user_id, total, status, created_at").range(from, to)),
+        fetchAllRowsInBatches((from, to) => supabase.from("customer_wallets").select("customer_user_id, balance").range(from, to)),
+      ]);
 
-    const localBodies = (localBodiesRes.data ?? []) as LocalBody[];
-    const districts = (districtsRes.data ?? []) as District[];
-    setLocalBodies(localBodies);
-    setDistricts(districts);
+      const localBodies = (localBodiesRes.data ?? []) as LocalBody[];
+      const districts = (districtsRes.data ?? []) as District[];
+      setLocalBodies(localBodies);
+      setDistricts(districts);
 
-    const allProfiles = (usersRes.data ?? []) as unknown as Profile[];
+      const profiles = allProfiles as unknown as Profile[];
     
-    const profileIdToMobile = new Map<string, string>();
-    allProfiles.forEach((p) => {
-      if (p.id && p.mobile_number) profileIdToMobile.set(p.id, p.mobile_number);
-    });
+      const profileIdToMobile = new Map<string, string>();
+      profiles.forEach((p) => {
+        if (p.id && p.mobile_number) profileIdToMobile.set(p.id, p.mobile_number);
+      });
 
-    const enrichedUsers = allProfiles.map((u) => {
-      const enriched: any = { ...u };
-      if (u.local_body_id) {
-        const lb = localBodies.find((l) => l.id === u.local_body_id);
-        if (lb) {
-          const dist = districts.find((d) => d.id === lb.district_id);
-          enriched.local_body_name = lb.name;
-          enriched.local_body_type = lb.body_type;
-          enriched.district_name = dist?.name ?? null;
+      const enrichedUsers = profiles.map((u) => {
+        const enriched: any = { ...u };
+        if (u.local_body_id) {
+          const lb = localBodies.find((l) => l.id === u.local_body_id);
+          if (lb) {
+            const dist = districts.find((d) => d.id === lb.district_id);
+            enriched.local_body_name = lb.name;
+            enriched.local_body_type = lb.body_type;
+            enriched.district_name = dist?.name ?? null;
+          }
         }
-      }
-      if ((u as any).referred_by) {
-        enriched.referrer_name = profileIdToMobile.get((u as any).referred_by) || null;
-      }
-      return enriched;
-    });
+        if ((u as any).referred_by) {
+          enriched.referrer_name = profileIdToMobile.get((u as any).referred_by) || null;
+        }
+        return enriched;
+      });
 
-    const oMap = new Map<string, { user_id: string; order_count: number; total_spent: number; last_order_date: string | null }>();
-    (ordersRes.data ?? []).forEach((o: any) => {
-      if (!o.user_id) return;
-      const existing = oMap.get(o.user_id);
-      if (existing) {
-        existing.order_count++;
-        if (o.status === "delivered") existing.total_spent += Number(o.total ?? 0);
-        if (!existing.last_order_date || o.created_at > existing.last_order_date) existing.last_order_date = o.created_at;
-      } else {
-        oMap.set(o.user_id, {
-          user_id: o.user_id,
-          order_count: 1,
-          total_spent: o.status === "delivered" ? Number(o.total ?? 0) : 0,
-          last_order_date: o.created_at,
-        });
-      }
-    });
-    setOrderSummaries(oMap);
+      const oMap = new Map<string, { user_id: string; order_count: number; total_spent: number; last_order_date: string | null }>();
+      allOrders.forEach((o: any) => {
+        if (!o.user_id) return;
+        const existing = oMap.get(o.user_id);
+        if (existing) {
+          existing.order_count++;
+          if (o.status === "delivered") existing.total_spent += Number(o.total ?? 0);
+          if (!existing.last_order_date || o.created_at > existing.last_order_date) existing.last_order_date = o.created_at;
+        } else {
+          oMap.set(o.user_id, {
+            user_id: o.user_id,
+            order_count: 1,
+            total_spent: o.status === "delivered" ? Number(o.total ?? 0) : 0,
+            last_order_date: o.created_at,
+          });
+        }
+      });
+      setOrderSummaries(oMap);
 
-    const wMap = new Map<string, { user_id: string; balance: number }>();
-    (walletsRes.data ?? []).forEach((w: any) => {
-      wMap.set(w.customer_user_id, { user_id: w.customer_user_id, balance: Number(w.balance ?? 0) });
-    });
-    setWalletSummaries(wMap);
+      const wMap = new Map<string, { user_id: string; balance: number }>();
+      allWallets.forEach((w: any) => {
+        wMap.set(w.customer_user_id, { user_id: w.customer_user_id, balance: Number(w.balance ?? 0) });
+      });
+      setWalletSummaries(wMap);
 
-    setUsers(enrichedUsers);
-    setRoles((rolesRes.data as Role[]) ?? []);
+      setUsers(enrichedUsers);
+      setRoles((rolesRes.data as Role[]) ?? []);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Please try again.";
+      toast({ title: "Could not load users", description: message, variant: "destructive" });
+    }
   };
 
   useEffect(() => { fetchData(); }, []);

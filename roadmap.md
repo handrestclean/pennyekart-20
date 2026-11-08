@@ -1,5 +1,8 @@
 # Roadmap
 
+## Admin users: load beyond the Supabase row limit
+- [x] Fetch profiles, orders, and customer wallets in 1,000-row batches so user filters, category counts, exports, and summaries include every row; add helper tests.
+
 ## Admin users: Selling Partner WhatsApp chat
 - [x] Add a per-partner WhatsApp chat action in `/admin/users`, using the saved mobile number and keeping chats user-initiated; invalid numbers cannot launch a chat.
 - [x] Open individual partner chats in the same editable message popup as customer chats, and support selected partner bulk messaging one chat at a time with per-name personalization.
