@@ -1,5 +1,8 @@
 # Roadmap
 
+## Admin communities creator details and panchayath filter
+- [ ] Show community creator contact and panchayath/ward details, and filter the list and summary totals by panchayath.
+
 ## Admin users: Selling Partner WhatsApp chat
 - [x] Add a per-partner WhatsApp chat action in `/admin/users`, using the saved mobile number and keeping chats user-initiated; invalid numbers cannot launch a chat.
 - [x] Open individual partner chats in the same editable message popup as customer chats, and support selected partner bulk messaging one chat at a time with per-name personalization.

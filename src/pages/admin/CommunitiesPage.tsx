@@ -37,7 +37,6 @@ interface SummaryRow {
   creator_user_id: string;
   creator_name: string | null;
   creator_mobile: string | null;
-  creator_email: string | null;
   creator_role_id: string | null;
   creator_area_id: string | null;
   creator_area_name: string | null;
@@ -145,7 +144,7 @@ const CommunitiesPage = () => {
     const summaries = (data as SummaryRow[] | null) ?? [];
     const creatorIds = [...new Set(summaries.map((r) => r.creator_user_id).filter(Boolean))];
     const profileQuery = creatorIds.length
-      ? supabase.from("profiles").select("user_id, role_id, full_name, mobile_number, email, local_body_id, ward_number").in("user_id", creatorIds)
+      ? supabase.from("profiles").select("user_id, role_id, full_name, mobile_number, local_body_id, ward_number").in("user_id", creatorIds)
       : Promise.resolve({ data: [] });
     const [profileResult, areaResult] = await Promise.all([
       profileQuery,
@@ -161,7 +160,6 @@ const CommunitiesPage = () => {
       ...r,
       creator_name: profileByCreator.get(r.creator_user_id)?.full_name ?? r.creator_name,
       creator_mobile: profileByCreator.get(r.creator_user_id)?.mobile_number ?? r.creator_mobile,
-      creator_email: profileByCreator.get(r.creator_user_id)?.email ?? null,
       creator_role_id: profileByCreator.get(r.creator_user_id)?.role_id ?? null,
       creator_area_id: profileByCreator.get(r.creator_user_id)?.local_body_id ?? null,
       creator_area_name: areaById.get(profileByCreator.get(r.creator_user_id)?.local_body_id ?? "") ?? null,
@@ -322,6 +320,11 @@ const CommunitiesPage = () => {
     void load();
   };
 
+  const visibleRows = useMemo(
+    () => filterCommunityRowsByArea(rows, panchayathFilter),
+    [rows, panchayathFilter],
+  );
+
   const totals = useMemo(() => {
     const revenue = visibleRows.reduce((s, r) => s + r.revenue, 0);
     const profit = visibleRows.reduce((s, r) => s + r.profit, 0);
@@ -399,6 +402,16 @@ const CommunitiesPage = () => {
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-1.5">
+              <Label>Panchayath</Label>
+              <Select value={panchayathFilter} onValueChange={setPanchayathFilter}>
+                <SelectTrigger aria-label="Filter by panchayath"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All panchayaths</SelectItem>
+                  {areaOptions.map((area) => <SelectItem key={area.id} value={area.id}>{area.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
             {period === "custom" && (
               <>
                 <div className="space-y-1.5">
@@ -417,7 +430,7 @@ const CommunitiesPage = () => {
         {/* Summary cards */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {[
-            { label: "Communities", value: String(rows.length), icon: Users },
+            { label: "Communities", value: String(visibleRows.length), icon: Users },
             { label: "Members", value: String(totals.memberCount), icon: Users },
             { label: "Revenue", value: money(totals.revenue), icon: IndianRupee },
             { label: "Profit", value: money(totals.profit), icon: TrendingUp },
@@ -437,16 +450,16 @@ const CommunitiesPage = () => {
         {/* Table */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Communities ({rows.length})</CardTitle>
+            <CardTitle className="text-base">Communities ({visibleRows.length})</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
               <div className="flex items-center justify-center gap-2 py-10 text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" /> Loading communities...
               </div>
-            ) : rows.length === 0 ? (
+            ) : visibleRows.length === 0 ? (
               <p className="py-10 text-center text-sm text-muted-foreground">
-                No communities with activity in this period.
+                {panchayathFilter === "all" ? "No communities with activity in this period." : "No communities found for this panchayath in this period."}
               </p>
             ) : (
               <div className="overflow-x-auto">
@@ -466,7 +479,7 @@ const CommunitiesPage = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {rows.map((r) => {
+                    {visibleRows.map((r) => {
                       const expanded = expandedId === r.community_id;
                       return (
                       <Fragment key={r.community_id}>
@@ -477,7 +490,11 @@ const CommunitiesPage = () => {
                             <Crown className="h-3 w-3 text-primary" />
                             {r.creator_name || "Community owner"}
                           </div>
-                          <p className="text-xs text-muted-foreground">{r.creator_mobile || "—"}</p>
+                          <p className="text-xs text-muted-foreground">{r.creator_mobile || "No phone number"}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {r.creator_area_name || "Panchayath unavailable"}
+                            {r.creator_ward_number != null ? ` · Ward ${r.creator_ward_number}` : ""}
+                          </p>
                         </TableCell>
                         <TableCell className="text-right">{r.member_count}</TableCell>
                         <TableCell className="text-right">{r.order_count}</TableCell>
@@ -529,6 +546,12 @@ const CommunitiesPage = () => {
                         <TableRow>
                           <TableCell colSpan={10} className="bg-muted/30 p-0">
                             <div className="space-y-3 p-3">
+                              <p className="text-sm text-muted-foreground">
+                                Creator: {r.creator_name || "Community owner"}
+                                {r.creator_mobile ? ` · ${r.creator_mobile}` : ""}
+                                {r.creator_area_name ? ` · ${r.creator_area_name}` : ""}
+                                {r.creator_ward_number != null ? ` · Ward ${r.creator_ward_number}` : ""}
+                              </p>
                               <div className="flex flex-wrap items-center justify-between gap-2">
                                 <p className="text-sm">Creator commission ({communityRate(r)}%): <strong>{money(communityCommission(r))}</strong></p>
                                 <Button size="sm" variant="outline" className="gap-1" onClick={() => exportMembers(r)}>
