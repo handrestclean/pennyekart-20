@@ -26,7 +26,6 @@ import { Users, IndianRupee, TrendingUp, Percent, Download, Loader2, Crown, Save
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { commissionForProfit, isValidCommissionRule, type CommissionRule } from "@/lib/communityCommission";
-import { filterCommunityRowsByArea } from "@/lib/communityList";
 
 const COMMISSION_KEY = "community_creator_commission_percent";
 const COMMISSION_RULES_KEY = "community_creator_commission_rules";
@@ -38,9 +37,6 @@ interface SummaryRow {
   creator_name: string | null;
   creator_mobile: string | null;
   creator_role_id: string | null;
-  creator_area_id: string | null;
-  creator_area_name: string | null;
-  creator_ward_number: number | null;
   member_count: number;
   order_count: number;
   revenue: number;
@@ -63,11 +59,6 @@ interface MemberRow {
 }
 
 interface RoleRow {
-  id: string;
-  name: string;
-}
-
-interface AreaOption {
   id: string;
   name: string;
 }
@@ -103,8 +94,6 @@ const CommunitiesPage = () => {
   const { isSuperAdmin } = usePermissions();
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState<SummaryRow[]>([]);
-  const [areaOptions, setAreaOptions] = useState<AreaOption[]>([]);
-  const [panchayathFilter, setPanchayathFilter] = useState("all");
   const [period, setPeriod] = useState<Period>("this_month");
   const [customFrom, setCustomFrom] = useState(toISODate(new Date(new Date().getFullYear(), new Date().getMonth(), 1)));
   const [customTo, setCustomTo] = useState(toISODate(new Date()));
@@ -143,27 +132,13 @@ const CommunitiesPage = () => {
     if (error) toast.error(error.message.replace(/^.*?:\s*/, ""));
     const summaries = (data as SummaryRow[] | null) ?? [];
     const creatorIds = [...new Set(summaries.map((r) => r.creator_user_id).filter(Boolean))];
-    const profileQuery = creatorIds.length
-      ? supabase.from("profiles").select("user_id, role_id, full_name, mobile_number, local_body_id, ward_number").in("user_id", creatorIds)
-      : Promise.resolve({ data: [] });
-    const [profileResult, areaResult] = await Promise.all([
-      profileQuery,
-      supabase.from("locations_local_bodies").select("id, name").eq("is_active", true).order("name"),
-    ]);
-    if (profileResult.error) toast.error(profileResult.error.message);
-    if (areaResult.error) toast.error(areaResult.error.message);
-    const creatorProfiles = profileResult.data ?? [];
-    const profileByCreator = new Map(creatorProfiles.map((profile) => [profile.user_id, profile]));
-    const areaById = new Map((areaResult.data ?? []).map((area) => [area.id, area.name]));
-    setAreaOptions((areaResult.data ?? []) as AreaOption[]);
+    const { data: creatorProfiles } = creatorIds.length
+      ? await supabase.from("profiles").select("user_id, role_id").in("user_id", creatorIds)
+      : { data: [] };
+    const roleByCreator = new Map((creatorProfiles ?? []).map((profile) => [profile.user_id, profile.role_id]));
     setRows(summaries.map((r) => ({
       ...r,
-      creator_name: profileByCreator.get(r.creator_user_id)?.full_name ?? r.creator_name,
-      creator_mobile: profileByCreator.get(r.creator_user_id)?.mobile_number ?? r.creator_mobile,
-      creator_role_id: profileByCreator.get(r.creator_user_id)?.role_id ?? null,
-      creator_area_id: profileByCreator.get(r.creator_user_id)?.local_body_id ?? null,
-      creator_area_name: areaById.get(profileByCreator.get(r.creator_user_id)?.local_body_id ?? "") ?? null,
-      creator_ward_number: profileByCreator.get(r.creator_user_id)?.ward_number ?? null,
+      creator_role_id: roleByCreator.get(r.creator_user_id) ?? null,
       revenue: Number(r.revenue),
       cost: Number(r.cost),
       profit: Number(r.profit),
@@ -320,19 +295,14 @@ const CommunitiesPage = () => {
     void load();
   };
 
-  const visibleRows = useMemo(
-    () => filterCommunityRowsByArea(rows, panchayathFilter),
-    [rows, panchayathFilter],
-  );
-
   const totals = useMemo(() => {
-    const revenue = visibleRows.reduce((s, r) => s + r.revenue, 0);
-    const profit = visibleRows.reduce((s, r) => s + r.profit, 0);
-    const memberCount = visibleRows.reduce((s, r) => s + r.member_count, 0);
-    const orderCount = visibleRows.reduce((s, r) => s + r.order_count, 0);
-    const commission = visibleRows.reduce((sum, row) => sum + communityCommission(row), 0);
+    const revenue = rows.reduce((s, r) => s + r.revenue, 0);
+    const profit = rows.reduce((s, r) => s + r.profit, 0);
+    const memberCount = rows.reduce((s, r) => s + r.member_count, 0);
+    const orderCount = rows.reduce((s, r) => s + r.order_count, 0);
+    const commission = rows.reduce((sum, row) => sum + communityCommission(row), 0);
     return { revenue, profit, memberCount, orderCount, commission };
-  }, [visibleRows, pct, rules]);
+  }, [rows, pct, rules]);
 
   const exportMembers = (row: SummaryRow) => {
 
@@ -402,16 +372,6 @@ const CommunitiesPage = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5">
-              <Label>Panchayath</Label>
-              <Select value={panchayathFilter} onValueChange={setPanchayathFilter}>
-                <SelectTrigger aria-label="Filter by panchayath"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All panchayaths</SelectItem>
-                  {areaOptions.map((area) => <SelectItem key={area.id} value={area.id}>{area.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
             {period === "custom" && (
               <>
                 <div className="space-y-1.5">
@@ -430,7 +390,7 @@ const CommunitiesPage = () => {
         {/* Summary cards */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {[
-            { label: "Communities", value: String(visibleRows.length), icon: Users },
+            { label: "Communities", value: String(rows.length), icon: Users },
             { label: "Members", value: String(totals.memberCount), icon: Users },
             { label: "Revenue", value: money(totals.revenue), icon: IndianRupee },
             { label: "Profit", value: money(totals.profit), icon: TrendingUp },
@@ -450,16 +410,16 @@ const CommunitiesPage = () => {
         {/* Table */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Communities ({visibleRows.length})</CardTitle>
+            <CardTitle className="text-base">Communities ({rows.length})</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
               <div className="flex items-center justify-center gap-2 py-10 text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" /> Loading communities...
               </div>
-            ) : visibleRows.length === 0 ? (
+            ) : rows.length === 0 ? (
               <p className="py-10 text-center text-sm text-muted-foreground">
-                {panchayathFilter === "all" ? "No communities with activity in this period." : "No communities found for this panchayath in this period."}
+                No communities with activity in this period.
               </p>
             ) : (
               <div className="overflow-x-auto">
@@ -479,7 +439,7 @@ const CommunitiesPage = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {visibleRows.map((r) => {
+                    {rows.map((r) => {
                       const expanded = expandedId === r.community_id;
                       return (
                       <Fragment key={r.community_id}>
@@ -490,11 +450,7 @@ const CommunitiesPage = () => {
                             <Crown className="h-3 w-3 text-primary" />
                             {r.creator_name || "Community owner"}
                           </div>
-                          <p className="text-xs text-muted-foreground">{r.creator_mobile || "No phone number"}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {r.creator_area_name || "Panchayath unavailable"}
-                            {r.creator_ward_number != null ? ` · Ward ${r.creator_ward_number}` : ""}
-                          </p>
+                          <p className="text-xs text-muted-foreground">{r.creator_mobile || "—"}</p>
                         </TableCell>
                         <TableCell className="text-right">{r.member_count}</TableCell>
                         <TableCell className="text-right">{r.order_count}</TableCell>
@@ -546,12 +502,6 @@ const CommunitiesPage = () => {
                         <TableRow>
                           <TableCell colSpan={10} className="bg-muted/30 p-0">
                             <div className="space-y-3 p-3">
-                              <p className="text-sm text-muted-foreground">
-                                Creator: {r.creator_name || "Community owner"}
-                                {r.creator_mobile ? ` · ${r.creator_mobile}` : ""}
-                                {r.creator_area_name ? ` · ${r.creator_area_name}` : ""}
-                                {r.creator_ward_number != null ? ` · Ward ${r.creator_ward_number}` : ""}
-                              </p>
                               <div className="flex flex-wrap items-center justify-between gap-2">
                                 <p className="text-sm">Creator commission ({communityRate(r)}%): <strong>{money(communityCommission(r))}</strong></p>
                                 <Button size="sm" variant="outline" className="gap-1" onClick={() => exportMembers(r)}>

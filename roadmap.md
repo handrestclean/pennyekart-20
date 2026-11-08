@@ -1,7 +1,7 @@
 # Roadmap
 
-## Admin communities creator details and panchayath filter
-- [ ] Show community creator contact and panchayath/ward details, and filter the list and summary totals by panchayath.
+## Admin users: load beyond the Supabase row limit
+- [x] Fetch profiles, orders, and customer wallets in 1,000-row batches so user filters, category counts, exports, and summaries include every row; add helper tests.
 
 ## Admin users: Selling Partner WhatsApp chat
 - [x] Add a per-partner WhatsApp chat action in `/admin/users`, using the saved mobile number and keeping chats user-initiated; invalid numbers cannot launch a chat.
