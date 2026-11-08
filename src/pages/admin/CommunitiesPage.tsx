@@ -37,6 +37,7 @@ interface SummaryRow {
   creator_user_id: string;
   creator_name: string | null;
   creator_mobile: string | null;
+  creator_email: string | null;
   creator_role_id: string | null;
   creator_area_id: string | null;
   creator_area_name: string | null;
@@ -144,7 +145,7 @@ const CommunitiesPage = () => {
     const summaries = (data as SummaryRow[] | null) ?? [];
     const creatorIds = [...new Set(summaries.map((r) => r.creator_user_id).filter(Boolean))];
     const profileQuery = creatorIds.length
-      ? supabase.from("profiles").select("user_id, role_id, full_name, mobile_number, local_body_id, ward_number").in("user_id", creatorIds)
+      ? supabase.from("profiles").select("user_id, role_id, full_name, mobile_number, email, local_body_id, ward_number").in("user_id", creatorIds)
       : Promise.resolve({ data: [] });
     const [profileResult, areaResult] = await Promise.all([
       profileQuery,
@@ -160,6 +161,7 @@ const CommunitiesPage = () => {
       ...r,
       creator_name: profileByCreator.get(r.creator_user_id)?.full_name ?? r.creator_name,
       creator_mobile: profileByCreator.get(r.creator_user_id)?.mobile_number ?? r.creator_mobile,
+      creator_email: profileByCreator.get(r.creator_user_id)?.email ?? null,
       creator_role_id: profileByCreator.get(r.creator_user_id)?.role_id ?? null,
       creator_area_id: profileByCreator.get(r.creator_user_id)?.local_body_id ?? null,
       creator_area_name: areaById.get(profileByCreator.get(r.creator_user_id)?.local_body_id ?? "") ?? null,
