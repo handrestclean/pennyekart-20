@@ -722,6 +722,48 @@ export type Database = {
           },
         ]
       }
+      customer_auth_audit_logs: {
+        Row: {
+          created_at: string
+          device_id: string | null
+          device_name: string | null
+          event_type: string
+          id: string
+          ip_address: string | null
+          is_suspicious: boolean
+          mobile_number: string
+          reason: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          device_id?: string | null
+          device_name?: string | null
+          event_type: string
+          id?: string
+          ip_address?: string | null
+          is_suspicious?: boolean
+          mobile_number: string
+          reason?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          device_id?: string | null
+          device_name?: string | null
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          is_suspicious?: boolean
+          mobile_number?: string
+          reason?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       customer_search_history: {
         Row: {
           created_at: string
