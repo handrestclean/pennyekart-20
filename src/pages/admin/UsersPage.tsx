@@ -131,12 +131,12 @@ const UsersPage = () => {
   const fetchData = async () => {
     try {
       const [allProfiles, rolesRes, localBodiesRes, districtsRes, allOrders, allWallets] = await Promise.all([
-        fetchAllRowsInBatches((from, to) => supabase.from("profiles").select("*").range(from, to)),
+        fetchAllRowsInBatches((from, to) => supabase.from("profiles").select("*").order("id", { ascending: true }).range(from, to)),
         supabase.from("roles").select("*"),
         supabase.from("locations_local_bodies").select("id, name, body_type, district_id, ward_count"),
         supabase.from("locations_districts").select("id, name"),
-        fetchAllRowsInBatches((from, to) => supabase.from("orders").select("user_id, total, status, created_at").range(from, to)),
-        fetchAllRowsInBatches((from, to) => supabase.from("customer_wallets").select("customer_user_id, balance").range(from, to)),
+        fetchAllRowsInBatches((from, to) => supabase.from("orders").select("user_id, total, status, created_at").order("id", { ascending: true }).range(from, to)),
+        fetchAllRowsInBatches((from, to) => supabase.from("customer_wallets").select("customer_user_id, balance").order("id", { ascending: true }).range(from, to)),
       ]);
 
       const localBodies = (localBodiesRes.data ?? []) as LocalBody[];
