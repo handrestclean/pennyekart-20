@@ -5,6 +5,7 @@ import { CalendarIcon, Filter, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import AdminLayout from "@/components/admin/AdminLayout";
 import SecurityAuditTab from "@/components/admin/SecurityAuditTab";
+import UtilitySellerAnalytics from "@/components/admin/UtilitySellerAnalytics";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -1190,6 +1191,7 @@ const ReportsPage = () => {
           <TabsTrigger value="pl">P&L</TabsTrigger>
           <TabsTrigger value="products">Products</TabsTrigger>
           <TabsTrigger value="sellers">Sellers</TabsTrigger>
+          <TabsTrigger value="utility">Utility Sellers</TabsTrigger>
           <TabsTrigger value="delivery">Delivery</TabsTrigger>
           <TabsTrigger value="stock">Stock</TabsTrigger>
           <TabsTrigger value="geography">Geography</TabsTrigger>
@@ -1399,6 +1401,11 @@ const ReportsPage = () => {
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+
+        {/* ── UTILITY SELLERS ── */}
+        <TabsContent value="utility">
+          <UtilitySellerAnalytics dateFrom={dateFrom} dateTo={dateTo} localBodyIds={filterLocalBody !== "all" ? new Set([filterLocalBody]) : localBodyIdsForDistrict} />
         </TabsContent>
 
         {/* ── SELLERS ── */}
