@@ -1,3 +1,4 @@
+import { PagedTableBody } from "@/components/admin/PagedTableBody";
 import { useEffect, useMemo, useState } from "react";
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
@@ -151,7 +152,7 @@ const UtilitySellerAnalytics = ({ dateFrom, dateTo, localBodyIds }: Props) => {
               <TableHead className="text-right">Bookings</TableHead><TableHead className="text-right">Completed</TableHead>
               <TableHead className="text-right">Cancelled</TableHead><TableHead className="text-right">Value</TableHead>
             </TableRow></TableHeader>
-            <TableBody>
+            <PagedTableBody>
               {data.sellerRows.length === 0 ? <TableRow><TableCell colSpan={9} className="py-6 text-center text-muted-foreground">No utility sellers</TableCell></TableRow> :
                 data.sellerRows.map(s => (
                   <TableRow key={s.id}>
@@ -162,7 +163,7 @@ const UtilitySellerAnalytics = ({ dateFrom, dateTo, localBodyIds }: Props) => {
                     <TableCell className="text-right">{s.cancelled}</TableCell><TableCell className="text-right font-semibold">{fmt(s.revenue)}</TableCell>
                   </TableRow>
                 ))}
-            </TableBody>
+            </PagedTableBody>
           </Table>
         </CardContent>
       </Card>
@@ -172,8 +173,8 @@ const UtilitySellerAnalytics = ({ dateFrom, dateTo, localBodyIds }: Props) => {
         <CardContent className="overflow-x-auto">
           <Table>
             <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Customer</TableHead><TableHead>Service</TableHead><TableHead>Seller</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Amount</TableHead></TableRow></TableHeader>
-            <TableBody>
-              {data.reqs.slice(0, 20).map(r => (
+            <PagedTableBody>
+              {data.reqs.map(r => (
                 <TableRow key={r.id}>
                   <TableCell>{format(new Date(r.created_at), "dd MMM yy")}</TableCell>
                   <TableCell>{r.contact_name}</TableCell>
@@ -184,7 +185,7 @@ const UtilitySellerAnalytics = ({ dateFrom, dateTo, localBodyIds }: Props) => {
                 </TableRow>
               ))}
               {data.reqs.length === 0 && <TableRow><TableCell colSpan={6} className="py-6 text-center text-muted-foreground">No bookings in this period</TableCell></TableRow>}
-            </TableBody>
+            </PagedTableBody>
           </Table>
         </CardContent>
       </Card>
