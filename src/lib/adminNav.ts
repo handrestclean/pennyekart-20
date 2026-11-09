@@ -14,17 +14,17 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
   ] },
   { id: "people", label: "People & Access", icon: Users, items: [
     { label: "Users", icon: Users, path: "/admin/users", perm: "read_users" },
-    { label: "Deletion Requests", icon: UserX, path: "/admin/deletion-requests", perm: "read_users" },
+    { label: "Deletion Requests", icon: UserX, path: "/admin/deletion-requests", perm: "read_deletion_requests" },
     { label: "Roles & Permissions", icon: ShieldCheck, path: "/admin/roles", perm: null, superOnly: true },
-    { label: "Communities", icon: UsersRound, path: "/admin/communities", perm: "read_users" },
+    { label: "Communities", icon: UsersRound, path: "/admin/communities", perm: "read_communities" },
   ] },
   { id: "catalogue", label: "Products & Catalogue", icon: Package, items: [
     { label: "Categories", icon: Grid3X3, path: "/admin/categories", perm: "read_categories" },
     { label: "Products", icon: Package, path: "/admin/products", perm: "read_products" },
-    { label: "Combo Offers", icon: Boxes, path: "/admin/combos", perm: "read_products" },
+    { label: "Combo Offers", icon: Boxes, path: "/admin/combos", perm: "read_combos" },
     { label: "Offers & Features", icon: Star, path: "/admin/offers", perm: "read_offers" },
     { label: "Banners", icon: Image, path: "/admin/banners", perm: "read_banners" },
-    { label: "Theme Studio", icon: Palette, path: "/admin/themes", perm: "read_settings" },
+    { label: "Theme Studio", icon: Palette, path: "/admin/themes", perm: "read_themes" },
   ] },
   { id: "sales", label: "Sales & Orders", icon: ShoppingCart, items: [
     { label: "Orders", icon: ShoppingCart, path: "/admin/orders", perm: "read_orders" },
@@ -34,27 +34,27 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
   { id: "inventory", label: "Inventory & Procurement", icon: Warehouse, items: [
     { label: "Locations", icon: MapPin, path: "/admin/locations", perm: "read_locations" },
     { label: "Godowns", icon: Warehouse, path: "/admin/godowns", perm: "read_godowns" },
-    { label: "Purchase", icon: ClipboardList, path: "/admin/purchase", perm: "create_stock" },
+    { label: "Purchase", icon: ClipboardList, path: "/admin/purchase", perm: "read_purchase" },
     { label: "Stock Control", icon: PackageSearch, path: "/admin/stock-control", perm: "read_stock" },
   ] },
   { id: "partners", label: "Partners & Services", icon: Handshake, items: [
     { label: "Selling Partners", icon: Store, path: "/admin/sellers", perm: "read_selling_partners" },
     { label: "Delivery Staff", icon: Truck, path: "/admin/delivery", perm: "read_delivery_staff" },
     { label: "Services", icon: Wrench, path: "/admin/services", perm: "read_services" },
-    { label: "Utility Services", icon: Hammer, path: "/admin/utility-services", perm: "read_services" },
+    { label: "Utility Services", icon: Hammer, path: "/admin/utility-services", perm: "read_utility_services" },
     { label: "Penny Prime", icon: Handshake, path: "/admin/penny-prime", perm: "read_penny_prime" },
   ] },
   { id: "finance", label: "Finance & Accounts", icon: Landmark, items: [
     { label: "Wallets", icon: Wallet, path: "/admin/wallets", perm: "read_wallets" },
-    { label: "Platform Margin", icon: Percent, path: "/admin/platform-margin", perm: "read_products" },
+    { label: "Platform Margin", icon: Percent, path: "/admin/platform-margin", perm: "read_platform_margin" },
   ] },
   { id: "marketing", label: "Marketing & Engagement", icon: Megaphone, items: [
-    { label: "Scratch & Win", icon: Gift, path: "/admin/scratch-rewards", perm: "read_settings" },
-    { label: "Internal Notifications", icon: Bell, path: "/admin/notifications", perm: "read_settings" },
-    { label: "Push Notifications", icon: BellRing, path: "/admin/push-notifications", perm: "read_settings" },
+    { label: "Scratch & Win", icon: Gift, path: "/admin/scratch-rewards", perm: "read_scratch_rewards" },
+    { label: "Internal Notifications", icon: Bell, path: "/admin/notifications", perm: "read_notifications" },
+    { label: "Push Notifications", icon: BellRing, path: "/admin/push-notifications", perm: "read_notifications" },
   ] },
   { id: "ai", label: "AI & Communication", icon: Bot, items: [
-    { label: "Chatbot Settings", icon: Bot, path: "/admin/chatbot", perm: "read_settings" },
+    { label: "Chatbot Settings", icon: Bot, path: "/admin/chatbot", perm: "read_chatbot" },
   ] },
   { id: "settings", label: "Platform Settings", icon: Settings, items: [
     { label: "App Settings", icon: SlidersHorizontal, path: "/admin/settings", perm: "read_settings" },

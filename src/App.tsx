@@ -97,15 +97,15 @@ const AppRoutes = () => {
       <Route path="/admin/users" element={<ProtectedRoute requirePermission="read_users"><UsersPage /></ProtectedRoute>} />
       <Route path="/admin/roles" element={<ProtectedRoute requireSuperAdmin><RolesPage /></ProtectedRoute>} />
       <Route path="/admin/products" element={<ProtectedRoute requirePermission="read_products"><ProductsPage /></ProtectedRoute>} />
-      <Route path="/admin/combos" element={<ProtectedRoute requirePermission="read_products"><CombosPage /></ProtectedRoute>} />
+      <Route path="/admin/combos" element={<ProtectedRoute requirePermission="read_combos"><CombosPage /></ProtectedRoute>} />
       <Route path="/admin/orders" element={<ProtectedRoute requirePermission="read_orders"><OrdersPage /></ProtectedRoute>} />
       <Route path="/admin/banners" element={<ProtectedRoute requirePermission="read_banners"><BannersPage /></ProtectedRoute>} />
       <Route path="/admin/categories" element={<ProtectedRoute requirePermission="read_categories"><CategoriesPage /></ProtectedRoute>} />
       <Route path="/admin/services" element={<ProtectedRoute requirePermission="read_services"><ServicesPage /></ProtectedRoute>} />
-      <Route path="/admin/utility-services" element={<ProtectedRoute requirePermission="read_services"><UtilityServicesPage /></ProtectedRoute>} />
+      <Route path="/admin/utility-services" element={<ProtectedRoute requirePermission="read_utility_services"><UtilityServicesPage /></ProtectedRoute>} />
       <Route path="/admin/locations" element={<ProtectedRoute requirePermission="read_locations"><LocationsPage /></ProtectedRoute>} />
       <Route path="/admin/godowns" element={<ProtectedRoute requirePermission="read_godowns"><GodownsPage /></ProtectedRoute>} />
-      <Route path="/admin/purchase" element={<ProtectedRoute requirePermission="create_stock"><PurchasePage /></ProtectedRoute>} />
+      <Route path="/admin/purchase" element={<ProtectedRoute requirePermission="read_purchase"><PurchasePage /></ProtectedRoute>} />
       <Route path="/admin/delivery" element={<ProtectedRoute requirePermission="read_delivery_staff"><DeliveryManagementPage /></ProtectedRoute>} />
       <Route path="/admin/sellers" element={<ProtectedRoute requirePermission="read_selling_partners"><SellingPartnersPage /></ProtectedRoute>} />
       <Route path="/admin/offers" element={<ProtectedRoute requirePermission="read_offers"><OffersPage /></ProtectedRoute>} />
@@ -120,14 +120,14 @@ const AppRoutes = () => {
       <Route path="/admin/sales-report" element={<ProtectedRoute requirePermission="read_reports"><SalesReportPage /></ProtectedRoute>} />
       <Route path="/admin/wallets" element={<ProtectedRoute requirePermission="read_wallets"><WalletManagementPage /></ProtectedRoute>} />
       <Route path="/admin/penny-prime" element={<ProtectedRoute requirePermission="read_penny_prime"><PennyPrimePage /></ProtectedRoute>} />
-      <Route path="/admin/platform-margin" element={<ProtectedRoute requirePermission="read_products"><PlatformMarginPage /></ProtectedRoute>} />
-      <Route path="/admin/chatbot" element={<ProtectedRoute requirePermission="read_settings"><ChatbotSettingsPage /></ProtectedRoute>} />
-      <Route path="/admin/notifications" element={<ProtectedRoute requirePermission="read_settings"><NotificationsPage /></ProtectedRoute>} />
-      <Route path="/admin/push-notifications" element={<ProtectedRoute requirePermission="read_settings"><PushNotificationsPage /></ProtectedRoute>} />
-      <Route path="/admin/scratch-rewards" element={<ProtectedRoute requirePermission="read_settings"><ScratchRewardsPage /></ProtectedRoute>} />
-      <Route path="/admin/themes" element={<ProtectedRoute requirePermission="read_settings"><ThemeStudioPage /></ProtectedRoute>} />
-      <Route path="/admin/themes/:id" element={<ProtectedRoute requirePermission="read_settings"><ThemeEditorPage /></ProtectedRoute>} />
-      <Route path="/admin/communities" element={<ProtectedRoute requirePermission="read_users"><CommunitiesPage /></ProtectedRoute>} />
+      <Route path="/admin/platform-margin" element={<ProtectedRoute requirePermission="read_platform_margin"><PlatformMarginPage /></ProtectedRoute>} />
+      <Route path="/admin/chatbot" element={<ProtectedRoute requirePermission="read_chatbot"><ChatbotSettingsPage /></ProtectedRoute>} />
+      <Route path="/admin/notifications" element={<ProtectedRoute requirePermission="read_notifications"><NotificationsPage /></ProtectedRoute>} />
+      <Route path="/admin/push-notifications" element={<ProtectedRoute requirePermission="read_notifications"><PushNotificationsPage /></ProtectedRoute>} />
+      <Route path="/admin/scratch-rewards" element={<ProtectedRoute requirePermission="read_scratch_rewards"><ScratchRewardsPage /></ProtectedRoute>} />
+      <Route path="/admin/themes" element={<ProtectedRoute requirePermission="read_themes"><ThemeStudioPage /></ProtectedRoute>} />
+      <Route path="/admin/themes/:id" element={<ProtectedRoute requirePermission="read_themes"><ThemeEditorPage /></ProtectedRoute>} />
+      <Route path="/admin/communities" element={<ProtectedRoute requirePermission="read_communities"><CommunitiesPage /></ProtectedRoute>} />
       <Route path="/penny-prime" element={<PennyPrimePublic />} />
 
       {/* Delivery Staff */}
@@ -175,7 +175,7 @@ const AppRoutes = () => {
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/delete-account" element={<DeleteAccount />} />
-      <Route path="/admin/deletion-requests" element={<ProtectedRoute requirePermission="read_users"><DeletionRequestsPage /></ProtectedRoute>} />
+      <Route path="/admin/deletion-requests" element={<ProtectedRoute requirePermission="read_deletion_requests"><DeletionRequestsPage /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
