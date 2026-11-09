@@ -1,3 +1,4 @@
+import { PagedTableBody } from "@/components/admin/PagedTableBody";
 import { useEffect, useMemo, useState, type ReactNode, type KeyboardEvent } from "react";
 import { format, subDays, subMonths, startOfDay, endOfDay, isWithinInterval, differenceInDays } from "date-fns";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -79,13 +80,12 @@ const DetailTable = ({ cols, rows, empty = "Nothing to show" }: { cols: Col[]; r
         <TableHeader>
           <TableRow>{cols.map(c => <TableHead key={c.label} className={c.right ? "text-right" : ""}>{c.label}</TableHead>)}</TableRow>
         </TableHeader>
-        <TableBody>
-          {rows.slice(0, MAX_ROWS).map((r, i) => (
+        <PagedTableBody>
+          {rows.map((r, i) => (
             <TableRow key={i}>{r.map((cell, j) => <TableCell key={j} className={cols[j]?.right ? "text-right" : ""}>{cell}</TableCell>)}</TableRow>
           ))}
-        </TableBody>
+        </PagedTableBody>
       </Table>
-      {rows.length > MAX_ROWS && <p className="text-xs text-muted-foreground text-center mt-2">Showing first {MAX_ROWS} of {rows.length}</p>}
     </>
   );
 const Summary = ({ children }: { children: ReactNode }) => <p className="mb-3 text-sm text-muted-foreground">{children}</p>;
@@ -766,14 +766,14 @@ const ReportsPage = () => {
   ];
   const plTable = () => (
     <Table>
-      <TableBody>
+      <PagedTableBody>
         {plRows.map(row => (
           <TableRow key={row.label}>
             <TableCell className={row.bold ? "font-semibold" : ""}>{row.label}</TableCell>
             <TableCell className={`text-right ${row.bold ? "font-bold text-lg" : ""}`}>{row.value}</TableCell>
           </TableRow>
         ))}
-      </TableBody>
+      </PagedTableBody>
     </Table>
   );
 
@@ -962,7 +962,7 @@ const ReportsPage = () => {
         <Summary>{list.length} customers</Summary>
         <DetailTable
           cols={[{ label: "Customer" }, { label: "Mobile" }, { label: "Joined" }, { label: "Last Login" }, { label: "Days Since Login", right: true }]}
-          rows={list.slice(0, 500).map(c => [
+          rows={list.map(c => [
             c.name, c.mobile || "—",
             c.joinedAt ? format(new Date(c.joinedAt), "dd MMM yy") : "—",
             c.lastLogin ? new Date(c.lastLogin).toLocaleString("en-IN") : "Never",
@@ -979,7 +979,7 @@ const ReportsPage = () => {
       <Summary>{pushAnalytics.registered.length} customers have push notifications enabled</Summary>
       <DetailTable
         cols={[{ label: "Customer" }, { label: "Mobile" }, { label: "Last Login" }]}
-        rows={pushAnalytics.registered.slice(0, 500).map(c => [c.name, c.mobile || "—", c.lastLogin ? new Date(c.lastLogin).toLocaleString("en-IN") : "Never"])}
+        rows={pushAnalytics.registered.map(c => [c.name, c.mobile || "—", c.lastLogin ? new Date(c.lastLogin).toLocaleString("en-IN") : "Never"])}
         empty="No push-registered customers"
       />
     </>
@@ -990,7 +990,7 @@ const ReportsPage = () => {
       <Summary>Push delivery, read and click counts per customer (current filters applied)</Summary>
       <DetailTable
         cols={[{ label: "Customer" }, { label: "Mobile" }, { label: "Delivered", right: true }, { label: "Read", right: true }, { label: "Clicked", right: true }, { label: "Last Click" }]}
-        rows={pushAnalytics.customerRows.slice(0, 500).map(c => [c.name, c.mobile || "—", c.delivered, c.read, c.clicked, c.lastClick ? new Date(c.lastClick).toLocaleString("en-IN") : "—"])}
+        rows={pushAnalytics.customerRows.map(c => [c.name, c.mobile || "—", c.delivered, c.read, c.clicked, c.lastClick ? new Date(c.lastClick).toLocaleString("en-IN") : "—"])}
         empty="No push activity in this period"
       />
     </>
@@ -1305,7 +1305,7 @@ const ReportsPage = () => {
                       <TableHead className="text-right">Margin</TableHead>
                     </TableRow>
                   </TableHeader>
-                  <TableBody>
+                  <PagedTableBody>
                     {monthlyData.map(m => (
                       <TableRow key={m.month}>
                         <TableCell className="font-medium">{m.month}</TableCell>
@@ -1316,7 +1316,7 @@ const ReportsPage = () => {
                         <TableCell className="text-right">{m.revenue > 0 ? `${((m.profit / m.revenue) * 100).toFixed(1)}%` : "—"}</TableCell>
                       </TableRow>
                     ))}
-                  </TableBody>
+                  </PagedTableBody>
                 </Table>
               )}
             </CardContent>
@@ -1356,7 +1356,7 @@ const ReportsPage = () => {
                         <TableHead className="text-right">Margin</TableHead>
                       </TableRow>
                     </TableHeader>
-                    <TableBody>
+                    <PagedTableBody>
                       {topProducts.map(p => (
                         <TableRow key={p.name}>
                           <TableCell className="font-medium">{p.name}</TableCell>
@@ -1366,7 +1366,7 @@ const ReportsPage = () => {
                           <TableCell className="text-right">{pct(p.profit, p.revenue)}</TableCell>
                         </TableRow>
                       ))}
-                    </TableBody>
+                    </PagedTableBody>
                   </Table>
                 </>
               )}
@@ -1387,7 +1387,7 @@ const ReportsPage = () => {
                       <TableHead className="text-right">MRP</TableHead>
                     </TableRow>
                   </TableHeader>
-                  <TableBody>
+                  <PagedTableBody>
                     {lowStockProds.map(p => (
                       <TableRow key={p.id}>
                         <TableCell className="font-medium">{p.name}</TableCell>
@@ -1396,7 +1396,7 @@ const ReportsPage = () => {
                         <TableCell className="text-right">₹{p.mrp}</TableCell>
                       </TableRow>
                     ))}
-                  </TableBody>
+                  </PagedTableBody>
                 </Table>
               </CardContent>
             </Card>
@@ -1430,7 +1430,7 @@ const ReportsPage = () => {
                       <TableHead className="text-right">Wallet Balance</TableHead>
                     </TableRow>
                   </TableHeader>
-                  <TableBody>
+                  <PagedTableBody>
                     {sellerPerf.map(s => (
                       <TableRow key={s.name}>
                         <TableCell className="font-medium">{s.name}</TableCell>
@@ -1440,7 +1440,7 @@ const ReportsPage = () => {
                         <TableCell className="text-right font-semibold">{fmt(s.balance)}</TableCell>
                       </TableRow>
                     ))}
-                  </TableBody>
+                  </PagedTableBody>
                 </Table>
               )}
             </CardContent>
@@ -1459,7 +1459,7 @@ const ReportsPage = () => {
                       <TableHead className="text-right">Price</TableHead>
                     </TableRow>
                   </TableHeader>
-                  <TableBody>
+                  <PagedTableBody>
                     {sellerProducts.filter(sp => !sp.is_approved).map(sp => (
                       <TableRow key={sp.id}>
                         <TableCell>{sp.name}</TableCell>
@@ -1467,7 +1467,7 @@ const ReportsPage = () => {
                         <TableCell className="text-right">₹{sp.price}</TableCell>
                       </TableRow>
                     ))}
-                  </TableBody>
+                  </PagedTableBody>
                 </Table>
               </CardContent>
             </Card>
@@ -1507,7 +1507,7 @@ const ReportsPage = () => {
                         <TableHead className="text-right">Success Rate</TableHead>
                       </TableRow>
                     </TableHeader>
-                    <TableBody>
+                    <PagedTableBody>
                       {staffPerfArr.map(s => {
                         const total = s.delivered + s.pending;
                         return (
@@ -1519,7 +1519,7 @@ const ReportsPage = () => {
                           </TableRow>
                         );
                       })}
-                    </TableBody>
+                    </PagedTableBody>
                   </Table>
                 </>
               )}
@@ -1547,7 +1547,7 @@ const ReportsPage = () => {
                     <TableHead className="text-right">Stock Value</TableHead>
                   </TableRow>
                 </TableHeader>
-                <TableBody>
+                <PagedTableBody>
                   {godownStock.length === 0 ? (
                     <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">No godown stock</TableCell></TableRow>
                   ) : (
@@ -1569,7 +1569,7 @@ const ReportsPage = () => {
                       </TableRow>
                     ))
                   )}
-                </TableBody>
+                </PagedTableBody>
               </Table>
             </CardContent>
           </Card>
@@ -1607,7 +1607,7 @@ const ReportsPage = () => {
                         <TableHead className="text-right">% of Revenue</TableHead>
                       </TableRow>
                     </TableHeader>
-                    <TableBody>
+                    <PagedTableBody>
                       {lbPerfArr.map(lb => (
                         <TableRow key={lb.name}>
                           <TableCell className="font-medium">{lb.name}</TableCell>
@@ -1617,7 +1617,7 @@ const ReportsPage = () => {
                           <TableCell className="text-right">{pct(lb.revenue, grossRevenue)}</TableCell>
                         </TableRow>
                       ))}
-                    </TableBody>
+                    </PagedTableBody>
                   </Table>
                 </>
               )}
@@ -1675,7 +1675,7 @@ const ReportsPage = () => {
                         <TableHead className="text-right">Avg Results</TableHead>
                       </TableRow>
                     </TableHeader>
-                    <TableBody>
+                    <PagedTableBody>
                       {searchAnalytics.topSearches.map((s, i) => (
                         <TableRow key={s.query}>
                           <TableCell className="text-muted-foreground">{i + 1}</TableCell>
@@ -1686,7 +1686,7 @@ const ReportsPage = () => {
                           </TableCell>
                         </TableRow>
                       ))}
-                    </TableBody>
+                    </PagedTableBody>
                   </Table>
                 )}
               </CardContent>
@@ -1712,7 +1712,7 @@ const ReportsPage = () => {
                         <TableHead className="text-right">Times</TableHead>
                       </TableRow>
                     </TableHeader>
-                    <TableBody>
+                    <PagedTableBody>
                       {searchAnalytics.zeroResultSearches.map((s, i) => (
                         <TableRow key={s.query}>
                           <TableCell className="text-muted-foreground">{i + 1}</TableCell>
@@ -1722,7 +1722,7 @@ const ReportsPage = () => {
                           </TableCell>
                         </TableRow>
                       ))}
-                    </TableBody>
+                    </PagedTableBody>
                   </Table>
                 )}
               </CardContent>
@@ -1833,7 +1833,7 @@ const ReportsPage = () => {
                       <TableHead className="text-right">Last Order</TableHead>
                     </TableRow>
                   </TableHeader>
-                  <TableBody>
+                  <PagedTableBody>
                     {customerAnalytics.topSpenders.map((c, i) => (
                       <TableRow key={c.userId}>
                         <TableCell className="text-muted-foreground">{i + 1}</TableCell>
@@ -1851,7 +1851,7 @@ const ReportsPage = () => {
                         </TableCell>
                       </TableRow>
                     ))}
-                  </TableBody>
+                  </PagedTableBody>
                 </Table>
               )}
             </CardContent>
@@ -1877,11 +1877,11 @@ const ReportsPage = () => {
                       <TableHead className="text-right">Days Since Last</TableHead>
                     </TableRow>
                   </TableHeader>
-                  <TableBody>
+                  <PagedTableBody>
                     {customerAnalytics.filtered.length === 0 ? (
                       <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">No customers found</TableCell></TableRow>
                     ) : (
-                      customerAnalytics.filtered.slice(0, 100).map(c => (
+                      customerAnalytics.filtered.map(c => (
                         <TableRow key={c.userId}>
                           <TableCell className="font-medium">{c.name}</TableCell>
                           <TableCell className="text-xs">{c.localBodyId ? (lbMap[c.localBodyId] || "—") : "—"}</TableCell>
@@ -1897,7 +1897,7 @@ const ReportsPage = () => {
                         </TableRow>
                       ))
                     )}
-                  </TableBody>
+                  </PagedTableBody>
                 </Table>
                 {customerAnalytics.filtered.length > 100 && (
                   <p className="text-xs text-muted-foreground text-center mt-2">Showing first 100 of {customerAnalytics.filtered.length} customers</p>
@@ -1955,8 +1955,8 @@ const ReportsPage = () => {
                       <TableHead className="text-right">Clicked</TableHead>
                     </TableRow>
                   </TableHeader>
-                  <TableBody>
-                    {pushAnalytics.perNotif.slice(0, 15).map(n => (
+                  <PagedTableBody>
+                    {pushAnalytics.perNotif.map(n => (
                       <TableRow key={n.id}>
                         <TableCell className="font-medium max-w-[220px] truncate">{n.title}</TableCell>
                         <TableCell className="text-xs text-muted-foreground">{format(new Date(n.createdAt), "dd MMM yy HH:mm")}</TableCell>
@@ -1965,7 +1965,7 @@ const ReportsPage = () => {
                         <TableCell className="text-right">{n.clicked}</TableCell>
                       </TableRow>
                     ))}
-                  </TableBody>
+                  </PagedTableBody>
                 </Table>
               )}
             </CardContent>
@@ -2007,7 +2007,7 @@ const ReportsPage = () => {
                         <TableHead className="text-right">Profit</TableHead>
                       </TableRow>
                     </TableHeader>
-                    <TableBody>
+                    <PagedTableBody>
                       {communityAnalytics.rows.slice().sort((a, b) => b.revenue - a.revenue).map(r => (
                         <TableRow key={r.id}>
                           <TableCell className="font-medium">{r.name}</TableCell>
@@ -2019,7 +2019,7 @@ const ReportsPage = () => {
                           <TableCell className="text-right">{r.profit !== 0 ? fmt(r.profit) : "—"}</TableCell>
                         </TableRow>
                       ))}
-                    </TableBody>
+                    </PagedTableBody>
                   </Table>
                 </div>
               )}
