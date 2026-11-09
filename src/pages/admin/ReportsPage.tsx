@@ -86,7 +86,6 @@ const DetailTable = ({ cols, rows, empty = "Nothing to show" }: { cols: Col[]; r
           ))}
         </PagedTableBody>
       </Table>
-      {rows.length > MAX_ROWS && <p className="text-xs text-muted-foreground text-center mt-2">Showing first {MAX_ROWS} of {rows.length}</p>}
     </>
   );
 const Summary = ({ children }: { children: ReactNode }) => <p className="mb-3 text-sm text-muted-foreground">{children}</p>;
