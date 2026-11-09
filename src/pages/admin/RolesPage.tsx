@@ -37,13 +37,23 @@ const featureIcons: Record<string, React.ComponentType<{ className?: string }>> 
   sellers: Users,
   services: Settings,
   reports: FileText,
+  communities: Users,
+  utility_services: Settings,
+  combos: Package,
+  platform_margin: Wallet,
+  themes: Image,
+  deletion_requests: Users,
+  chatbot: Settings,
+  notifications: FileText,
+  scratch_rewards: Zap,
+  flash_sales: Zap,
 };
 
 const featureOrder = [
-  'dashboard', 'users', 'products', 'categories', 'orders', 'banners',
-  'locations', 'godowns', 'stock', 'purchase', 'offers', 'penny_prime',
+  'dashboard', 'users', 'deletion_requests', 'communities', 'products', 'combos', 'platform_margin', 'categories', 'orders', 'banners',
+  'locations', 'godowns', 'stock', 'purchase', 'offers', 'flash_sales', 'penny_prime',
   'wallets', 'delivery', 'delivery_staff', 'selling_partners', 'sellers',
-  'services', 'reports', 'settings', 'storage'
+  'services', 'utility_services', 'reports', 'notifications', 'scratch_rewards', 'chatbot', 'themes', 'settings', 'storage'
 ];
 
 const RolesPage = () => {
