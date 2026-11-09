@@ -54,6 +54,11 @@
 ## Admin access request area details
 - [x] Show panchayath and ward in a searchable, status-filtered table on /admin/communities → Access requests; export the visible rows as CSV.
 
+## Admin Communities Panchayath and sorting
+- [x] Show creator Panchayath, district, and ward; filter by Panchayath including unset areas.
+- [x] Sort by overall performance, orders, profit, or members; no customer star-rating data currently exists.
+- [x] Add focused filtering/sorting tests and verify the preview build.
+
 ## Communities commission allocation tab
 - [x] Show communities in each e-Life person's allocated area, calculate commission using saved role rates, persist period snapshots, and provide refresh, search, filters, and CSV export. Added checks for saved-snapshot loading and fresh calculation/save; focused tests pass.
 - [ ] Confirm live e-Life data in a super admin session (blocked: external Supabase gives no test sign-in).
