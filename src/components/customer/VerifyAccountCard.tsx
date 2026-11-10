@@ -33,7 +33,7 @@ const VerifyAccountCard = ({ userId, profileMobile, isSuperAdmin = false }: Prop
   const [busy, setBusy] = useState(false);
   const [mismatch, setMismatch] = useState(false);
 
-  // WhatsApp verification link option (super admin, team leader, coordinator)
+  // WhatsApp verification link option (super admin, team leader, coordinator, group leader)
   const [roleNames, setRoleNames] = useState<string[]>([]);
   const [linkOpen, setLinkOpen] = useState(false);
   const [linkMobile, setLinkMobile] = useState("");

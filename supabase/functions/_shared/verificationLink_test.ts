@@ -8,12 +8,12 @@ import {
   whatsappLinkMessage,
 } from "./verificationLink.ts";
 
-Deno.test("only super admin, team leader and coordinator can send links", () => {
+Deno.test("super admin, team leader, coordinator and group leader can send links", () => {
   for (const role of LINK_ALLOWED_ROLES) assertEquals(isAllowedSenderRole(role), true);
   assertEquals(isAllowedSenderRole("Team Leader"), true);
   assertEquals(isAllowedSenderRole(" coordinator "), true);
   assertEquals(isAllowedSenderRole("pro"), false);
-  assertEquals(isAllowedSenderRole("group leader"), false);
+  assertEquals(isAllowedSenderRole("Group Leader"), true);
   assertEquals(isAllowedSenderRole(null), false);
 });
 
