@@ -799,7 +799,7 @@ const UsersPage = () => {
                       {u.user_type === "selling_partner" && (
                         <div className="flex items-center gap-1 rounded-md border px-2 text-sm">
                           <span>WhatsApp</span>
-                          <WhatsAppChatButton name={u.full_name} mobile={u.mobile_number} />
+                          <WhatsAppChatButton name={u.full_name} mobile={u.mobile_number} userType={u.user_type === "selling_partner" ? "Selling Partner" : "Customer"} />
                         </div>
                       )}
                       {u.user_type !== "customer" && (
@@ -853,7 +853,7 @@ const UsersPage = () => {
                       )}
                       <TableCell>
                         <div className="text-sm">{u.email ?? "—"}</div>
-                        {u.mobile_number && <div className="flex items-center gap-1 text-xs text-muted-foreground">{u.mobile_number}{u.user_type === "selling_partner" && <WhatsAppChatButton name={u.full_name} mobile={u.mobile_number} />}</div>}
+                        {u.mobile_number && <div className="flex items-center gap-1 text-xs text-muted-foreground">{u.mobile_number}{u.user_type === "selling_partner" && <WhatsAppChatButton name={u.full_name} mobile={u.mobile_number} userType={u.user_type === "selling_partner" ? "Selling Partner" : "Customer"} />}</div>}
                       </TableCell>
                       <TableCell><span className="text-xs text-muted-foreground">{u.district_name ?? "—"}</span></TableCell>
                       <TableCell><span className="text-xs text-muted-foreground">{u.local_body_name ?? "—"}</span></TableCell>

@@ -6,7 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 const STORAGE_KEY = "pennyekart.savedWhatsAppMessages";
 const EVENT = "saved-whatsapp-messages-changed";
 
-export interface SavedWhatsAppMessage { id: string; text: string; savedAt: string; }
+export interface SavedWhatsAppRecipient { name: string | null; mobile: string | null; type?: string; }
+export interface SavedWhatsAppMessage { id: string; text: string; savedAt: string; recipient?: SavedWhatsAppRecipient; }
 
 const read = (): SavedWhatsAppMessage[] => {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch { return []; }
@@ -16,10 +17,10 @@ const write = (list: SavedWhatsAppMessage[]) => {
   window.dispatchEvent(new Event(EVENT));
 };
 
-interface Props { message: string; onUse: (text: string) => void; }
+interface Props { message: string; onUse: (text: string) => void; recipient?: SavedWhatsAppRecipient; }
 
 /** Save the current WhatsApp message to send later, and reuse saved ones. */
-const SavedWhatsAppMessages = ({ message, onUse }: Props) => {
+const SavedWhatsAppMessages = ({ message, onUse, recipient }: Props) => {
   const { toast } = useToast();
   const [saved, setSaved] = useState<SavedWhatsAppMessage[]>(read);
   const [showList, setShowList] = useState(false);
@@ -34,8 +35,8 @@ const SavedWhatsAppMessages = ({ message, onUse }: Props) => {
   const save = () => {
     const text = message.trim();
     if (!text) return;
-    if (saved.some((s) => s.text === text)) { toast({ title: "Message already saved" }); return; }
-    write([{ id: crypto.randomUUID(), text, savedAt: new Date().toISOString() }, ...saved].slice(0, 30));
+    if (saved.some((s) => s.text === text && (s.recipient?.mobile ?? null) === (recipient?.mobile ?? null))) { toast({ title: "Message already saved" }); return; }
+    write([{ id: crypto.randomUUID(), text, savedAt: new Date().toISOString(), ...(recipient ? { recipient } : {}) }, ...saved].slice(0, 30));
     toast({ title: "Message saved", description: "Find it under Saved messages to send later." });
   };
 

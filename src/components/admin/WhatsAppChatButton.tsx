@@ -14,9 +14,9 @@ const TEMPLATES: { label: string; text: (name: string) => string }[] = [
   { label: "We miss you", text: (n) => `Hi ${n}, we miss you at Pennyekart! Come back and shop your daily essentials with home delivery.` },
 ];
 
-interface Props { name: string | null; mobile: string | null; }
+interface Props { name: string | null; mobile: string | null; userType?: string; }
 
-const WhatsAppChatButton = ({ name, mobile }: Props) => {
+const WhatsAppChatButton = ({ name, mobile, userType }: Props) => {
   const digits = whatsappDigits(mobile);
   const [open, setOpen] = useState(false);
   const display = name?.trim() || "there";
@@ -54,7 +54,7 @@ const WhatsAppChatButton = ({ name, mobile }: Props) => {
               <Label>Message</Label>
               <Textarea rows={5} value={message} onChange={(e) => setMessage(e.target.value)} />
             </div>
-            <SavedWhatsAppMessages message={message} onUse={(t) => setMessage(t.split("{{name}}").join(display))} />
+            <SavedWhatsAppMessages message={message} onUse={(t) => setMessage(t.split("{{name}}").join(display))} recipient={{ name, mobile, type: userType }} />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
