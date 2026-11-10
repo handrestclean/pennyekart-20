@@ -21,7 +21,7 @@ describe("verification link sender eligibility", () => {
 
   it("rejects other roles and missing roles", () => {
     expect(canSendVerificationLink(false, "pro")).toBe(false);
-    expect(canSendVerificationLink(false, "group leader")).toBe(false);
+    expect(canSendVerificationLink(false, "group leader")).toBe(true);
     expect(canSendVerificationLink(false, null)).toBe(false);
     expect(canSendVerificationLink(false, undefined)).toBe(false);
   });
@@ -38,7 +38,7 @@ describe("verification link sender eligibility", () => {
   });
 
   it("rejects members whose roles are all outside the allowed list", () => {
-    expect(canSendVerificationLinkForRoles(false, ["pro", "group leader"])).toBe(false);
+    expect(canSendVerificationLinkForRoles(false, ["pro"])).toBe(false);
     expect(canSendVerificationLinkForRoles(false, [])).toBe(false);
   });
 });

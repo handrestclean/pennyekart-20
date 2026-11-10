@@ -1,7 +1,7 @@
 // Client-side rules for the WhatsApp verification link option (mirrors
 // supabase/functions/_shared/verificationLink.ts; the server re-checks
 // everything, so this is presentation-only).
-export const VERIFICATION_LINK_ROLES = ["super admin", "team leader", "coordinator"] as const;
+export const VERIFICATION_LINK_ROLES = ["super admin", "team leader", "coordinator", "group leader"] as const;
 
 export const VERIFICATION_LINK_TTL_LABEL = "24 hours";
 
