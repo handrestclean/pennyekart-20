@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { Copy, ListChecks, Trash2 } from "lucide-react";
+import { Copy, ListChecks, MessageCircle, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { whatsappChatLink, whatsappDigits } from "@/lib/appLinks";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -49,9 +51,24 @@ const PendingWhatsAppMessagesButton = () => {
               {saved.map((s) => (
                 <div key={s.id} className="flex items-start gap-2 rounded-md border p-2 text-sm">
                   <div className="flex-1 min-w-0">
+                    {s.recipient?.mobile ? (
+                      <div className="mb-1 flex flex-wrap items-center gap-1.5 text-xs">
+                        <span className="font-semibold">{s.recipient.name || "Unnamed"}</span>
+                        <span className="text-muted-foreground">{s.recipient.mobile}</span>
+                        {s.recipient.type && <Badge variant="secondary">{s.recipient.type}</Badge>}
+                      </div>
+                    ) : (
+                      <Badge variant="outline" className="mb-1">General template</Badge>
+                    )}
                     <p className="whitespace-pre-wrap break-words">{s.text}</p>
                     <p className="mt-1 text-xs text-muted-foreground">Saved {new Date(s.savedAt).toLocaleString()}</p>
                   </div>
+                  {whatsappDigits(s.recipient?.mobile ?? null) && (
+                    <Button type="button" size="icon" variant="ghost" className="h-7 w-7 text-primary" aria-label="Send on WhatsApp" title="Send on WhatsApp"
+                      onClick={() => window.open(whatsappChatLink(whatsappDigits(s.recipient!.mobile)!, s.text.split("{{name}}").join(s.recipient!.name?.trim() || "there")), "_blank", "noopener")}>
+                      <MessageCircle className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
                   <Button type="button" size="icon" variant="ghost" className="h-7 w-7" aria-label="Copy message" onClick={() => copy(s.text)}>
                     <Copy className="h-3.5 w-3.5" />
                   </Button>

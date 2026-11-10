@@ -735,7 +735,7 @@ const CustomerList = ({ customers, orderSummaries, walletSummaries, onRefresh }:
                     onCheckedChange={(checked) => toggleCustomerSelection(c.user_id, checked === true)}
                     aria-label={`Select ${c.full_name ?? "customer"}`}
                   />
-                  <WhatsAppChatButton name={c.full_name} mobile={c.mobile_number} />
+                  <WhatsAppChatButton name={c.full_name} mobile={c.mobile_number} userType="Customer" />
                   {getStatusBadge(c)}
                   <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-90" />
                 </div>
@@ -830,7 +830,7 @@ const CustomerList = ({ customers, orderSummaries, walletSummaries, onRefresh }:
                       )}
                     </div>
                   </TableCell>
-                  <TableCell><div className="flex items-center gap-1">{c.mobile_number ?? "—"}<WhatsAppChatButton name={c.full_name} mobile={c.mobile_number} /></div></TableCell>
+                  <TableCell><div className="flex items-center gap-1">{c.mobile_number ?? "—"}<WhatsAppChatButton name={c.full_name} mobile={c.mobile_number} userType="Customer" /></div></TableCell>
                   <TableCell>{getStatusBadge(c)}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
