@@ -20,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import WhatsAppChatButton from "@/components/admin/WhatsAppChatButton";
 import SavedWhatsAppMessages from "@/components/admin/SavedWhatsAppMessages";
+import PendingWhatsAppMessagesButton from "@/components/admin/PendingWhatsAppMessagesButton";
 
 interface Profile {
   id: string;
@@ -702,7 +703,8 @@ const CustomerList = ({ customers, orderSummaries, walletSummaries, onRefresh }:
           Clear selection
         </Button>
         <div className="ml-auto flex flex-wrap items-center gap-2">
-          <span className="text-sm text-muted-foreground">{selectedCustomerIds.size} selected</span>
+          <PendingWhatsAppMessagesButton />
+<span className="text-sm text-muted-foreground">{selectedCustomerIds.size} selected</span>
           <Button type="button" size="sm" disabled={selectedCustomerIds.size === 0} onClick={beginBulkMessaging}>
             <MessageCircle className="mr-2 h-4 w-4" /> Message selected
           </Button>

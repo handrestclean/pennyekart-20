@@ -19,6 +19,7 @@ import { buildBulkWhatsAppQueue, personalizeBulkWhatsAppMessage, WHATSAPP_MESSAG
 import { fetchAllRowsInBatches } from "@/lib/fetchAllRowsInBatches";
 import WhatsAppChatButton from "@/components/admin/WhatsAppChatButton";
 import SavedWhatsAppMessages from "@/components/admin/SavedWhatsAppMessages";
+import PendingWhatsAppMessagesButton from "@/components/admin/PendingWhatsAppMessagesButton";
 import CustomerList from "@/components/admin/CustomerList";
 import AddAdminDialog from "@/components/admin/AddAdminDialog";
 import ElifeRoleSyncButton from "@/components/admin/ElifeRoleSyncButton";
@@ -715,7 +716,8 @@ const UsersPage = () => {
                 Clear selection
               </Button>
               <div className="ml-auto flex flex-wrap items-center gap-2">
-                <span className="text-sm text-muted-foreground">{selectedSellerIds.size} selected</span>
+                <PendingWhatsAppMessagesButton />
+<span className="text-sm text-muted-foreground">{selectedSellerIds.size} selected</span>
                 <Button type="button" size="sm" disabled={selectedSellerIds.size === 0} onClick={beginBulkSellerMessaging}>
                   <MessageCircle className="mr-2 h-4 w-4" /> Message selected
                 </Button>
