@@ -118,6 +118,8 @@ const CommunitiesPage = () => {
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [members, setMembers] = useState<MemberRow[]>([]);
+  const [invites, setInvites] = useState<{ invite_id: string; invited_mobile: string; invited_name: string | null; created_at: string }[]>([]);
+  const [invitesLoading, setInvitesLoading] = useState(false);
   const [memberLoading, setMemberLoading] = useState(false);
   const [renameTarget, setRenameTarget] = useState<SummaryRow | null>(null);
   const [renameValue, setRenameValue] = useState("");
@@ -284,6 +286,13 @@ const CommunitiesPage = () => {
     if (expandedId === row.community_id) { setExpandedId(null); return; }
     setExpandedId(row.community_id);
     void loadMembers(row);
+    setInvites([]);
+    setInvitesLoading(true);
+    void rpc("admin_get_community_pending_invites", { _community_id: row.community_id }).then(({ data, error }) => {
+      if (error) toast.error(error.message.replace(/^.*?:\s*/, ""));
+      setInvites((data as typeof invites | null) ?? []);
+      setInvitesLoading(false);
+    });
   };
 
   const openRename = (row: SummaryRow) => {
@@ -613,6 +622,28 @@ const CommunitiesPage = () => {
                                   </Table>
                                 </div>
                               )}
+                              <div className="space-y-2 rounded-md border bg-background p-3">
+                                <p className="flex items-center gap-2 text-sm font-medium">
+                                  Pending invites <Badge variant="secondary">{invitesLoading ? "…" : invites.length}</Badge>
+                                </p>
+                                {invitesLoading ? (
+                                  <p className="text-sm text-muted-foreground">Loading invites...</p>
+                                ) : invites.length === 0 ? (
+                                  <p className="text-sm text-muted-foreground">No pending invites.</p>
+                                ) : (
+                                  <div className="grid gap-2 sm:grid-cols-2">
+                                    {invites.map((inv) => (
+                                      <div key={inv.invite_id} className="flex items-center justify-between gap-2 rounded-md border p-2">
+                                        <div className="min-w-0">
+                                          <p className="truncate text-sm font-medium">{inv.invited_name || "Not registered yet"}</p>
+                                          <p className="text-xs text-muted-foreground">{inv.invited_mobile} · {new Date(inv.created_at).toLocaleDateString()}</p>
+                                        </div>
+                                        <Badge variant="outline">Pending</Badge>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </TableCell>
                         </TableRow>
