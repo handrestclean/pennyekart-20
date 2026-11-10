@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { whatsappChatLink, whatsappDigits } from "@/lib/appLinks";
+import SavedWhatsAppMessages from "@/components/admin/SavedWhatsAppMessages";
 
 const TEMPLATES: { label: string; text: (name: string) => string }[] = [
   { label: "Greeting", text: (n) => `Hello ${n}, greetings from Pennyekart! How can we help you today?` },
@@ -53,6 +54,7 @@ const WhatsAppChatButton = ({ name, mobile }: Props) => {
               <Label>Message</Label>
               <Textarea rows={5} value={message} onChange={(e) => setMessage(e.target.value)} />
             </div>
+            <SavedWhatsAppMessages message={message} onUse={(t) => setMessage(t.split("{{name}}").join(display))} />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
