@@ -19,6 +19,7 @@ import { format, subDays, formatDistanceToNow, differenceInDays, differenceInHou
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import WhatsAppChatButton from "@/components/admin/WhatsAppChatButton";
+import SavedWhatsAppMessages from "@/components/admin/SavedWhatsAppMessages";
 
 interface Profile {
   id: string;
@@ -984,6 +985,7 @@ const CustomerList = ({ customers, orderSummaries, walletSummaries, onRefresh }:
                 <Textarea id="bulk-whatsapp-message" rows={5} value={bulkMessage} onChange={(event) => setBulkMessage(event.target.value)} />
                 <p className="text-xs text-muted-foreground"><code>{"{{name}}"}</code> is replaced with each customer's name. WhatsApp opens one chat at a time; press send there.</p>
               </div>
+              <SavedWhatsAppMessages message={bulkMessage} onUse={setBulkMessage} />
             </div>
           )}
           <div className="flex flex-wrap justify-between gap-2">

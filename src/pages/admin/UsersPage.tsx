@@ -18,6 +18,7 @@ import { whatsappDigits, whatsappChatLink } from "@/lib/appLinks";
 import { buildBulkWhatsAppQueue, personalizeBulkWhatsAppMessage, WHATSAPP_MESSAGE_TEMPLATES } from "@/lib/bulkWhatsApp";
 import { fetchAllRowsInBatches } from "@/lib/fetchAllRowsInBatches";
 import WhatsAppChatButton from "@/components/admin/WhatsAppChatButton";
+import SavedWhatsAppMessages from "@/components/admin/SavedWhatsAppMessages";
 import CustomerList from "@/components/admin/CustomerList";
 import AddAdminDialog from "@/components/admin/AddAdminDialog";
 import ElifeRoleSyncButton from "@/components/admin/ElifeRoleSyncButton";
@@ -1161,6 +1162,7 @@ const UsersPage = () => {
                 <Textarea id="seller-bulk-whatsapp-message" rows={5} value={bulkMessage} onChange={(event) => setBulkMessage(event.target.value)} />
                 <p className="text-xs text-muted-foreground"><code>{"{{name}}"}</code> is replaced with each partner's name. WhatsApp opens one chat at a time; send each message in WhatsApp.</p>
               </div>
+              <SavedWhatsAppMessages message={bulkMessage} onUse={setBulkMessage} />
             </div>
           )}
           <DialogFooter className="flex-wrap justify-between gap-2 sm:justify-between">
