@@ -3127,6 +3127,15 @@ export type Database = {
         Args: { _community_id: string }
         Returns: boolean
       }
+      admin_get_community_pending_invites: {
+        Args: { _community_id: string }
+        Returns: {
+          created_at: string
+          invite_id: string
+          invited_mobile: string
+          invited_name: string
+        }[]
+      }
       admin_rename_community: {
         Args: { _community_id: string; _new_name: string }
         Returns: boolean
