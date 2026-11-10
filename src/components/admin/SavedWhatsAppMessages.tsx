@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Bookmark, Trash2 } from "lucide-react";
+import { Bookmark, ListChecks, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
@@ -22,6 +22,7 @@ interface Props { message: string; onUse: (text: string) => void; }
 const SavedWhatsAppMessages = ({ message, onUse }: Props) => {
   const { toast } = useToast();
   const [saved, setSaved] = useState<SavedWhatsAppMessage[]>(read);
+  const [showList, setShowList] = useState(false);
 
   useEffect(() => {
     const sync = () => setSaved(read());
@@ -40,10 +41,18 @@ const SavedWhatsAppMessages = ({ message, onUse }: Props) => {
 
   return (
     <div className="space-y-2">
-      <Button type="button" size="sm" variant="secondary" disabled={!message.trim()} onClick={save}>
-        <Bookmark className="mr-1.5 h-3.5 w-3.5" /> Save message for later
-      </Button>
-      {saved.length > 0 && (
+      <div className="flex flex-wrap gap-2">
+        <Button type="button" size="sm" variant="outline" onClick={() => setShowList((v) => !v)} aria-expanded={showList}>
+          <ListChecks className="mr-1.5 h-3.5 w-3.5" /> {showList ? "Hide" : "Show"} saved messages ({saved.length})
+        </Button>
+        <Button type="button" size="sm" variant="secondary" disabled={!message.trim()} onClick={save}>
+          <Bookmark className="mr-1.5 h-3.5 w-3.5" /> Save message for later
+        </Button>
+      </div>
+      {showList && saved.length === 0 && (
+        <p className="text-xs text-muted-foreground">No saved messages yet.</p>
+      )}
+      {showList && saved.length > 0 && (
         <div className="space-y-1">
           <p className="text-xs font-medium text-muted-foreground">Saved messages</p>
           <div className="max-h-40 space-y-1 overflow-y-auto">
