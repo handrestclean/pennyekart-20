@@ -288,7 +288,7 @@ const CommunityCard = ({ userId }: Props) => {
               <div>
                 <p className="text-sm font-medium">Verify your account first</p>
                 <p className="text-xs text-muted-foreground">
-                  Only verified accounts can create or join a community. Use the verification card above to get your blue tick.
+                  Only verified accounts can create or join a community. Ask your coordinator or team leader for a verification link to get your blue tick.
                 </p>
               </div>
             </div>
