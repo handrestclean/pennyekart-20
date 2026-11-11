@@ -5,6 +5,7 @@ import {
   canSendVerificationLinkForRoles,
   normalizeVerificationMobile,
   verificationWhatsAppMessage,
+  playStoreInviteMessage,
 } from "./accountVerification";
 
 describe("verification link sender eligibility", () => {
@@ -61,5 +62,11 @@ describe("verification link helpers", () => {
     const msg = verificationWhatsAppMessage("https://app.example.com/customer/verify?token=t");
     expect(msg).toContain("https://app.example.com/customer/verify?token=t");
     expect(msg).toContain("24 hours");
+  });
+});
+
+describe("play store invite", () => {
+  it("includes the Play Store app link", () => {
+    expect(playStoreInviteMessage()).toContain("https://play.google.com/store/apps/details?id=com.pennyekart.app");
   });
 });

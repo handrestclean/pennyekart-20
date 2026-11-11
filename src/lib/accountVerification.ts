@@ -36,3 +36,8 @@ export const buildVerificationLink = (origin: string, token: string): string =>
 
 export const verificationWhatsAppMessage = (link: string): string =>
   `Pennyekart account verification\n\nTap this link to verify your account automatically:\n${link}\n\nValid for 24 hours. Do not share this link.`;
+
+export const PLAY_STORE_APP_URL = "https://play.google.com/store/apps/details?id=com.pennyekart.app";
+
+export const playStoreInviteMessage = (): string =>
+  `Welcome to Pennyekart!\n\nDownload our app from the Google Play Store to create your account and get started:\n${PLAY_STORE_APP_URL}`;
