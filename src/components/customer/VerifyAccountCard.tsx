@@ -14,6 +14,7 @@ import {
   mergeLegacyRoleName,
   normalizeVerificationMobile,
   verificationWhatsAppMessage,
+  playStoreInviteMessage,
 } from "@/lib/accountVerification";
 
 interface Props {
@@ -38,6 +39,7 @@ const VerifyAccountCard = ({ userId, profileMobile, isSuperAdmin = false }: Prop
   const [linkOpen, setLinkOpen] = useState(false);
   const [linkMobile, setLinkMobile] = useState("");
   const [linkBusy, setLinkBusy] = useState(false);
+  const [notRegistered, setNotRegistered] = useState<string | null>(null);
   const [sentLink, setSentLink] = useState<{ mobile: string; waUrl: string } | null>(null);
 
   const loadStatus = useCallback(async () => {
@@ -169,6 +171,10 @@ const VerifyAccountCard = ({ userId, profileMobile, isSuperAdmin = false }: Prop
       openLinkDialog();
       return;
     }
+    if ((data as { status?: string } | null)?.status === "not_registered") {
+      setNotRegistered(entered);
+      return;
+    }
     if (error || serverErr || !token) {
       toast.error(serverErr || "Could not create the verification link. Please try again.");
       return;
@@ -266,6 +272,35 @@ const VerifyAccountCard = ({ userId, profileMobile, isSuperAdmin = false }: Prop
                 {linkBusy ? "Creating link..." : "Create link & open WhatsApp"}
               </Button>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={notRegistered !== null} onOpenChange={(o) => !o && setNotRegistered(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Customer not registered
+            </DialogTitle>
+            <DialogDescription>
+              No Pennyekart account was found with +91 {notRegistered}. They need to install the app and sign up first.
+              Send them the Play Store link on WhatsApp so they can download the app?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setNotRegistered(null)}>Cancel</Button>
+            <Button
+              className="gap-2"
+              onClick={() => {
+                window.open(`https://wa.me/91${notRegistered}?text=${encodeURIComponent(playStoreInviteMessage())}`, "_blank");
+                toast.success("Play Store link opened in WhatsApp");
+                setNotRegistered(null);
+              }}
+            >
+              <MessageCircle className="h-4 w-4" />
+              Send Play Store link on WhatsApp
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
