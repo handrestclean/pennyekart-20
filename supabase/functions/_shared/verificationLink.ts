@@ -3,7 +3,7 @@
 // database stores its SHA-256 hash (see the redeem edge function).
 export const LINK_TTL_MINUTES = 24 * 60;
 
-export const LINK_ALLOWED_ROLES = ["super admin", "team leader", "coordinator", "group leader"] as const;
+export const LINK_ALLOWED_ROLES = ["super admin", "team leader", "coordinator", "group leader", "pro"] as const;
 
 export const MAX_LINKS_PER_HOUR = 10;
 
