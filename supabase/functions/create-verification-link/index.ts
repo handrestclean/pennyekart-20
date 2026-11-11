@@ -19,12 +19,17 @@ Deno.serve(async (req) => {
   const admin = adminClient();
 
   // Authorization is checked on the server from protected sources only.
-  const { data: p } = await admin.from("profiles").select("is_super_admin").eq("user_id", uid).maybeSingle();
+  const { data: p } = await admin.from("profiles").select("is_super_admin, role_id").eq("user_id", uid).maybeSingle();
   if (!p) return json({ error: "Profile not found" }, 404);
   let allowed = Boolean(p.is_super_admin);
   if (!allowed) {
     const { data: roles } = await admin.from("user_roles").select("roles(name)").eq("user_id", uid);
     allowed = (roles ?? []).some((r: { roles?: { name?: string } | null }) => isAllowedSenderRole(r.roles?.name));
+    // Legacy fallback: role stored only on profiles.role_id.
+    if (!allowed && p.role_id) {
+      const { data: legacy } = await admin.from("roles").select("name").eq("id", p.role_id).maybeSingle();
+      allowed = isAllowedSenderRole(legacy?.name);
+    }
   }
   if (!allowed) return json({ error: "You are not allowed to send verification links" }, 403);
 

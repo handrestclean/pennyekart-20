@@ -197,7 +197,7 @@ const VerifyAccountCard = ({ userId, profileMobile, isSuperAdmin = false }: Prop
             <p className="text-xs text-muted-foreground">
               {isVerified
                 ? "Your mobile number is verified on WhatsApp."
-                : "Ask your coordinator or team leader to send you a verification link on WhatsApp."}
+                : "Ask your coordinator, team leader or PRO to send you a verification link on WhatsApp."}
             </p>
           </div>
           {canSend && (
