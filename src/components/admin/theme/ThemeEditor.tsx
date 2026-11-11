@@ -13,8 +13,7 @@ import {
   ThemeColors,
   ThemeSectionKey,
   UiThemeConfig,
-  reorderSections,
-} from "@/lib/uiThemes";
+  reorderSections, ThemeBgImage } from "@/lib/uiThemes";
 
 const COLOR_FIELDS: { key: keyof ThemeColors; label: string }[] = [
   { key: "primary", label: "Primary" },
@@ -54,6 +53,30 @@ const selectClasses = "h-9 rounded-md border border-input bg-transparent px-3 te
  * product/category cards, banners, and drag-and-drop homepage section ordering.
  * Purely presentational: it never fetches or persists anything itself.
  */
+
+const BgImageControls = ({ id, value, onChange }: { id: string; value: ThemeBgImage; onChange: (v: ThemeBgImage) => void }) => (
+  <div className="mt-4 space-y-3 border-t pt-3">
+    <p className="text-sm font-medium">Background image (festival, e.g. Diwali)</p>
+    <ImageUpload bucket="banners" value={value.bgImageUrl ?? ""} enableCompressionOptions onChange={(url) => onChange({ ...value, bgImageUrl: url })} />
+    {value.bgImageUrl && (
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label>Darken image · {value.bgOverlay ?? 0}%</Label>
+          <Slider value={[value.bgOverlay ?? 0]} min={0} max={80} step={5} onValueChange={([v]) => onChange({ ...value, bgOverlay: v })} />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor={id}>Image fit</Label>
+          <select id={id} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={value.bgFit ?? "cover"} onChange={(e) => onChange({ ...value, bgFit: e.target.value as ThemeBgImage["bgFit"] })}>
+            <option value="cover">Fill area</option>
+            <option value="contain">Fit whole image</option>
+            <option value="repeat">Repeat pattern</option>
+          </select>
+        </div>
+      </div>
+    )}
+  </div>
+);
+
 const ThemeEditor = ({
   name,
   description,
@@ -243,6 +266,7 @@ const ThemeEditor = ({
             />
           </div>
         </div>
+        <BgImageControls id="theme-header-fit" value={config.header} onChange={(v) => onConfigChange({ ...config, header: { ...config.header, ...v } })} />
       </section>
 
       {/* Navigation */}
@@ -391,6 +415,12 @@ const ThemeEditor = ({
             )}
           </div>
         </div>
+      </section>
+
+      {/* Footer */}
+      <section className="rounded-lg border p-4">
+        <h3 className="mb-1 text-sm font-semibold">Footer</h3>
+        <BgImageControls id="theme-footer-fit" value={config.footer ?? { bgImageUrl: "", bgOverlay: 40, bgFit: "cover" }} onChange={(v) => onConfigChange({ ...config, footer: { bgImageUrl: "", bgOverlay: 40, bgFit: "cover", ...config.footer, ...v } as never })} />
       </section>
 
       {/* Homepage section order — drag to reorder, arrows as fallback */}

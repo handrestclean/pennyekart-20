@@ -62,6 +62,16 @@ export interface ThemeHeader {
   sticky: boolean;
   showLogo: boolean;
   logoUrl: string;
+  /** Festive background image behind the header. Empty = none. */
+  bgImageUrl?: string;
+  bgOverlay?: number;
+  bgFit?: "cover" | "contain" | "repeat";
+}
+
+export interface ThemeFooter {
+  bgImageUrl: string;
+  bgOverlay: number;
+  bgFit: "cover" | "contain" | "repeat";
 }
 
 export interface ThemeNavigation {
@@ -101,6 +111,7 @@ export interface UiThemeConfig {
   productCard: ThemeProductCard;
   categoryCard: ThemeCategoryCard;
   banner: ThemeBanner;
+  footer?: ThemeFooter;
 }
 
 export const DEFAULT_THEME_COLORS: ThemeColors = {
@@ -126,7 +137,7 @@ export const DEFAULT_UI_THEME_CONFIG: UiThemeConfig = {
   colors: DEFAULT_THEME_COLORS,
   fonts: { heading: "Playfair Display", body: "DM Sans", headingWeight: "bold" },
   buttons: { radius: 12, style: "filled", shadow: true, uppercase: false },
-  header: { style: "solid", height: 112, sticky: true, showLogo: true, logoUrl: "" },
+  header: { style: "solid", height: 112, sticky: true, showLogo: true, logoUrl: "", bgImageUrl: "", bgOverlay: 30, bgFit: "cover" },
   navigation: { style: "icons_labels" },
   homepage: { sections: THEME_SECTION_LABELS.map((s) => s.key) },
   productCard: {
@@ -139,6 +150,7 @@ export const DEFAULT_UI_THEME_CONFIG: UiThemeConfig = {
   },
   categoryCard: { style: "circle" },
   banner: { radius: 16, height: 160, bgImageUrl: "", bgOverlay: 20, bgFit: "cover" },
+  footer: { bgImageUrl: "", bgOverlay: 40, bgFit: "cover" },
 };
 
 /** Deep-merge a stored/partial theme config over the defaults. */
@@ -159,6 +171,7 @@ export const mergeThemeConfig = (raw: unknown): UiThemeConfig => {
     productCard: { ...DEFAULT_UI_THEME_CONFIG.productCard, ...(partial.productCard ?? {}) },
     categoryCard: { ...DEFAULT_UI_THEME_CONFIG.categoryCard, ...(partial.categoryCard ?? {}) },
     banner: { ...DEFAULT_UI_THEME_CONFIG.banner, ...(partial.banner ?? {}) },
+    footer: { ...DEFAULT_UI_THEME_CONFIG.footer!, ...(partial.footer ?? {}) },
   };
 };
 
@@ -382,14 +395,17 @@ export const THEME_FONT_OPTIONS = [
 ];
 
 /** CSS background for the festive banner area, or undefined when no image is set. */
-export const bannerBackgroundStyle = (banner: ThemeBanner): Record<string, string> | undefined => {
-  const url = banner.bgImageUrl?.trim();
+export type ThemeBgImage = { bgImageUrl?: string; bgOverlay?: number; bgFit?: "cover" | "contain" | "repeat" };
+
+export const bannerBackgroundStyle = (banner: ThemeBgImage | undefined): Record<string, string> | undefined => {
+  const url = banner?.bgImageUrl?.trim();
+  if (!banner) return undefined;
   if (!url) return undefined;
   const o = Math.min(80, Math.max(0, banner.bgOverlay ?? 0)) / 100;
   const safe = url.replace(/["\\]/g, "");
   return {
     backgroundImage: `linear-gradient(rgba(0,0,0,${o}), rgba(0,0,0,${o})), url("${safe}")`,
-    backgroundSize: banner.bgFit === "repeat" ? "auto" : banner.bgFit,
+    backgroundSize: banner.bgFit === "repeat" ? "auto" : banner.bgFit ?? "cover",
     backgroundRepeat: banner.bgFit === "repeat" ? "repeat" : "no-repeat",
     backgroundPosition: "center",
   };
