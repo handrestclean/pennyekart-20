@@ -89,9 +89,23 @@ describe("festive banner background", () => {
     expect(_bbs(_mtc({}).banner)).toBeUndefined();
   });
   it("applies image with overlay capped at 80%", () => {
-    const s = _bbs({ radius: 0, height: 100, bgImageUrl: "https://x/diwali.jpg", bgOverlay: 95, bgFit: "repeat" })!;
+    const s = _bbs({ bgImageUrl: "https://x/diwali.jpg", bgOverlay: 95, bgFit: "repeat" })!;
     expect(s.backgroundImage).toContain('url("https://x/diwali.jpg")');
     expect(s.backgroundImage).toContain("rgba(0,0,0,0.8)");
     expect(s.backgroundRepeat).toBe("repeat");
+  });
+});
+
+describe("header and footer backgrounds", () => {
+  it("old themes get empty header and footer images", () => {
+    const c = _mtc({ header: { style: "solid" } });
+    expect(c.header.bgImageUrl).toBe("");
+    expect(c.footer?.bgImageUrl).toBe("");
+    expect(_bbs(c.header)).toBeUndefined();
+    expect(_bbs(c.footer)).toBeUndefined();
+  });
+  it("keeps a saved footer image", () => {
+    const c = _mtc({ footer: { bgImageUrl: "https://x/f.jpg", bgOverlay: 30, bgFit: "cover" } });
+    expect(_bbs(c.footer)!.backgroundImage).toContain("rgba(0,0,0,0.3)");
   });
 });
