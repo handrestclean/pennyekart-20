@@ -84,6 +84,11 @@ export interface ThemeCategoryCard {
 export interface ThemeBanner {
   radius: number;
   height: number;
+  /** Festive background image behind the homepage banner area (e.g. Diwali). Empty = none. */
+  bgImageUrl: string;
+  /** Dark overlay on the background image, 0–80 (%). */
+  bgOverlay: number;
+  bgFit: "cover" | "contain" | "repeat";
 }
 
 export interface UiThemeConfig {
@@ -133,7 +138,7 @@ export const DEFAULT_UI_THEME_CONFIG: UiThemeConfig = {
     showWalletPoints: true,
   },
   categoryCard: { style: "circle" },
-  banner: { radius: 16, height: 160 },
+  banner: { radius: 16, height: 160, bgImageUrl: "", bgOverlay: 20, bgFit: "cover" },
 };
 
 /** Deep-merge a stored/partial theme config over the defaults. */
@@ -272,7 +277,7 @@ export const THEME_TEMPLATES: UiThemeTemplate[] = [
     buttons: { radius: 10, style: "filled", shadow: true, uppercase: false },
     productCard: { radius: 14, shadow: "strong", imageRatio: "portrait", showRating: true, showDiscount: true, showWalletPoints: false },
     categoryCard: { style: "rounded" },
-    banner: { radius: 20, height: 190 },
+    banner: { radius: 20, height: 190, bgImageUrl: "", bgOverlay: 20, bgFit: "cover" },
   }),
 ];
 
@@ -375,3 +380,17 @@ export const THEME_FONT_OPTIONS = [
   "Montserrat",
   "Work Sans",
 ];
+
+/** CSS background for the festive banner area, or undefined when no image is set. */
+export const bannerBackgroundStyle = (banner: ThemeBanner): Record<string, string> | undefined => {
+  const url = banner.bgImageUrl?.trim();
+  if (!url) return undefined;
+  const o = Math.min(80, Math.max(0, banner.bgOverlay ?? 0)) / 100;
+  const safe = url.replace(/["\\]/g, "");
+  return {
+    backgroundImage: `linear-gradient(rgba(0,0,0,${o}), rgba(0,0,0,${o})), url("${safe}")`,
+    backgroundSize: banner.bgFit === "repeat" ? "auto" : banner.bgFit,
+    backgroundRepeat: banner.bgFit === "repeat" ? "repeat" : "no-repeat",
+    backgroundPosition: "center",
+  };
+};

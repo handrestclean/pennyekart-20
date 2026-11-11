@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import ImageUpload from "@/components/admin/ImageUpload";
 import {
   THEME_FONT_OPTIONS,
   THEME_SECTION_LABELS,
@@ -354,6 +355,40 @@ const ThemeEditor = ({
                 onValueChange={([v]) => onConfigChange({ ...config, banner: { ...config.banner, height: v } })}
               />
             </div>
+          </div>
+          <div className="mt-4 space-y-3 border-t pt-3">
+            <p className="text-sm font-medium">Background image (festival, e.g. Diwali)</p>
+            <ImageUpload
+              bucket="banners"
+              value={config.banner.bgImageUrl}
+              enableCompressionOptions
+              onChange={(url) => onConfigChange({ ...config, banner: { ...config.banner, bgImageUrl: url } })}
+            />
+            {config.banner.bgImageUrl && (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Darken image · {config.banner.bgOverlay}%</Label>
+                  <Slider
+                    value={[config.banner.bgOverlay]}
+                    min={0} max={80} step={5}
+                    onValueChange={([v]) => onConfigChange({ ...config, banner: { ...config.banner, bgOverlay: v } })}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="theme-banner-fit">Image fit</Label>
+                  <select
+                    id="theme-banner-fit"
+                    className={`${selectClasses} w-full`}
+                    value={config.banner.bgFit}
+                    onChange={(e) => onConfigChange({ ...config, banner: { ...config.banner, bgFit: e.target.value as UiThemeConfig["banner"]["bgFit"] } })}
+                  >
+                    <option value="cover">Fill area</option>
+                    <option value="contain">Fit whole image</option>
+                    <option value="repeat">Repeat pattern</option>
+                  </select>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>

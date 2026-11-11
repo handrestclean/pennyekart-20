@@ -4,6 +4,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveInternalLink } from "@/lib/appLinks";
+import { useUiTheme } from "@/hooks/useUiTheme";
+import { bannerBackgroundStyle } from "@/lib/uiThemes";
 import banner1 from "@/assets/banner-1.jpg";
 import banner2 from "@/assets/banner-2.jpg";
 import banner3 from "@/assets/banner-3.jpg";
@@ -33,6 +35,8 @@ const fetchBanners = async () => {
 const BannerCarousel = () => {
   const [current, setCurrent] = useState(0);
   const navigate = useNavigate();
+  const { config: themeConfig } = useUiTheme();
+  const festiveBg = bannerBackgroundStyle(themeConfig.banner);
   const { data: banners = [] } = useQuery({
     queryKey: ["banners"],
     queryFn: fetchBanners,
@@ -73,7 +77,7 @@ const BannerCarousel = () => {
   };
 
   return (
-    <section className="bg-muted/30 py-4">
+    <section className={festiveBg ? "py-4" : "bg-muted/30 py-4"} style={festiveBg}>
       <div className="container">
         <div className="relative overflow-hidden rounded-xl">
           <div className="hidden md:flex gap-4 justify-center">
