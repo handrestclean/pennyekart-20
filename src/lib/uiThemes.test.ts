@@ -81,3 +81,17 @@ describe("uiThemes", () => {
     expect(reorderSections(base, 0, base.length)).toBe(base);
   });
 });
+
+import { bannerBackgroundStyle as _bbs, mergeThemeConfig as _mtc } from "./uiThemes";
+describe("festive banner background", () => {
+  it("old themes get no background image", () => {
+    expect(_mtc({ banner: { radius: 10, height: 150 } }).banner.bgImageUrl).toBe("");
+    expect(_bbs(_mtc({}).banner)).toBeUndefined();
+  });
+  it("applies image with overlay capped at 80%", () => {
+    const s = _bbs({ radius: 0, height: 100, bgImageUrl: "https://x/diwali.jpg", bgOverlay: 95, bgFit: "repeat" })!;
+    expect(s.backgroundImage).toContain('url("https://x/diwali.jpg")');
+    expect(s.backgroundImage).toContain("rgba(0,0,0,0.8)");
+    expect(s.backgroundRepeat).toBe("repeat");
+  });
+});
