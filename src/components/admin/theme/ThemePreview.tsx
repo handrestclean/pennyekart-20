@@ -3,6 +3,7 @@ import {
   UiThemeConfig,
   applyThemeVariables,
   clearThemeVariables,
+  bannerBackgroundStyle,
 } from "@/lib/uiThemes";
 import { Search, Home, ShoppingBag, Heart, User, Star } from "lucide-react";
 
@@ -116,7 +117,7 @@ const ThemePreview = ({ config }: { config: UiThemeConfig }) => {
         </div>
 
         {/* Banner */}
-        <div className="px-3 pt-3">
+        <div className="px-3 pt-3 pb-3" style={bannerBackgroundStyle(config.banner)}>
           <div
             className="flex items-center justify-between px-4 py-4"
             style={{
