@@ -729,12 +729,14 @@ const CustomerList = ({ customers, orderSummaries, walletSummaries, onRefresh }:
                   <div className="text-xs text-muted-foreground">{c.mobile_number ?? "—"}</div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                  <Checkbox
-                    checked={selectedCustomerIds.has(c.user_id)}
-                    onClick={(event) => { event.preventDefault(); event.stopPropagation(); }}
-                    onCheckedChange={(checked) => toggleCustomerSelection(c.user_id, checked === true)}
-                    aria-label={`Select ${c.full_name ?? "customer"}`}
-                  />
+                  <span className="-m-2 flex h-10 w-10 items-center justify-center" onClick={(event) => { event.preventDefault(); event.stopPropagation(); }}>
+                    <Checkbox
+                      className="h-5 w-5"
+                      checked={selectedCustomerIds.has(c.user_id)}
+                      onCheckedChange={(checked) => toggleCustomerSelection(c.user_id, checked === true)}
+                      aria-label={`Select ${c.full_name ?? "customer"}`}
+                    />
+                  </span>
                   <WhatsAppChatButton name={c.full_name} mobile={c.mobile_number} userType="Customer" />
                   {getStatusBadge(c)}
                   <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-90" />
