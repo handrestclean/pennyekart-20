@@ -277,7 +277,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen pb-16 md:pb-0">
-      <header className="sticky top-0 z-50" style={bannerBackgroundStyle(themeConfig.header)}>
+      <header className={`sticky top-0 z-50 ${themeConfig.header?.bgImageUrl ? "header-has-bg" : ""}`} style={bannerBackgroundStyle(themeConfig.header)}>
         <PlatformSelector selected={platform} onSelect={handlePlatformSelect} />
         <SearchBar />
       </header>

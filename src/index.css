@@ -221,3 +221,12 @@
   animation-iteration-count: 1 !important;
   transition-duration: 0.001ms !important;
 }
+
+/* Let festive header background images show through the top bars */
+.header-has-bg > div.bg-primary,
+.header-has-bg > div.bg-card {
+  background-color: hsl(var(--card) / 0.15);
+  backdrop-filter: blur(2px);
+}
+.header-has-bg > div.bg-card { border-color: transparent; }
+.header-has-bg input { background-color: hsl(var(--card) / 0.9); }
