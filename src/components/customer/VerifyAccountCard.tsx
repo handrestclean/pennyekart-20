@@ -197,16 +197,11 @@ const VerifyAccountCard = ({ userId, profileMobile, isSuperAdmin = false }: Prop
             <p className="text-xs text-muted-foreground">
               {isVerified
                 ? "Your mobile number is verified on WhatsApp."
-                : "Verify your mobile number on WhatsApp to get the blue tick."}
+                : "Ask your coordinator or team leader to send you a verification link on WhatsApp."}
             </p>
           </div>
-          {(canSend || !isVerified) && (
+          {canSend && (
             <div className="flex shrink-0 gap-2">
-              {!isVerified && (
-                <Button size="sm" onClick={openSelfVerify}>
-                  Verify
-                </Button>
-              )}
               {canSend && (
                 <Button size="sm" variant="outline" onClick={openLinkDialog} className="gap-1.5">
                   <Link2 className="h-4 w-4" />
@@ -218,71 +213,6 @@ const VerifyAccountCard = ({ userId, profileMobile, isSuperAdmin = false }: Prop
           )}
         </CardContent>
       </Card>
-
-      {/* Self verification with a 6-digit code */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{step === "mobile" ? "Verify your mobile number" : "Enter verification code"}</DialogTitle>
-            <DialogDescription>
-              {step === "mobile"
-                ? "Enter the mobile number you used to sign up. We'll send a code to that number on WhatsApp."
-                : "Open WhatsApp, send the pre-filled message to yourself, then type the 6-digit code below."}
-            </DialogDescription>
-          </DialogHeader>
-
-          {step === "mobile" ? (
-            <div className="space-y-3">
-              <div>
-                <Label htmlFor="verify-mobile">Mobile Number</Label>
-                <Input
-                  id="verify-mobile"
-                  inputMode="numeric"
-                  placeholder="10-digit number"
-                  value={mobile}
-                  onChange={(e) => { setMobile(digitsOnly(e.target.value).slice(0, 10)); setMismatch(false); }}
-                />
-              </div>
-              {mismatch && (
-                <div className="flex gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3">
-                  <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
-                  <p className="text-xs text-destructive">
-                    This number does not match your registered mobile number. Please enter the number you used to sign up.
-                  </p>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <Label htmlFor="verify-code">6-digit code</Label>
-              <Input
-                id="verify-code"
-                inputMode="numeric"
-                placeholder="000000"
-                className="tracking-[0.5em] text-center text-lg"
-                value={code}
-                onChange={(e) => setCode(digitsOnly(e.target.value).slice(0, 6))}
-              />
-              <Button variant="ghost" size="sm" className="text-xs" onClick={() => setStep("mobile")}>
-                Didn't get it? Resend code
-              </Button>
-            </div>
-          )}
-
-          <DialogFooter>
-            {step === "mobile" ? (
-              <Button onClick={handleSendCode} disabled={busy} className="gap-2 w-full">
-                <MessageCircle className="h-4 w-4" />
-                {busy ? "Please wait..." : "Send code on WhatsApp"}
-              </Button>
-            ) : (
-              <Button onClick={handleVerify} disabled={busy} className="w-full">
-                {busy ? "Verifying..." : "Verify"}
-              </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* One-tap verification link for a customer (authorized roles only) */}
       <Dialog open={linkOpen} onOpenChange={setLinkOpen}>
