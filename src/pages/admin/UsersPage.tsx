@@ -738,12 +738,14 @@ const UsersPage = () => {
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       {filterType === "selling_partner" && (
-                        <Checkbox
-                          checked={selectedSellerIds.has(u.user_id)}
-                          onCheckedChange={(checked) => toggleSellerSelection(u.user_id, checked === true)}
-                          onClick={(event) => event.stopPropagation()}
-                          aria-label={`Select ${u.full_name || "selling partner"}`}
-                        />
+                        <span className="-m-2 flex h-10 w-10 items-center justify-center" onClick={(event) => { event.preventDefault(); event.stopPropagation(); }}>
+                          <Checkbox
+                            className="h-5 w-5"
+                            checked={selectedSellerIds.has(u.user_id)}
+                            onCheckedChange={(checked) => toggleSellerSelection(u.user_id, checked === true)}
+                            aria-label={`Select ${u.full_name || "selling partner"}`}
+                          />
+                        </span>
                       )}
                       <Badge variant={getTypeBadgeVariant(u.user_type)}>{USER_TYPE_LABELS[u.user_type] ?? u.user_type}</Badge>
                       <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-90" />
