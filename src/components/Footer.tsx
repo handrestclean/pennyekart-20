@@ -1,8 +1,13 @@
 import LegalLinks from "@/components/LegalLinks";
 import logo from "@/assets/logo.png";
+import { useUiTheme } from "@/hooks/useUiTheme";
+import { bannerBackgroundStyle } from "@/lib/uiThemes";
 
-const Footer = () => (
-  <footer className="border-t bg-card py-12">
+const Footer = () => {
+  const { config } = useUiTheme();
+  const bg = bannerBackgroundStyle(config.footer);
+  return (
+  <footer className={`border-t bg-card py-12 ${bg ? "[&_*]:!text-primary-foreground" : ""}`} style={bg}>
     <div className="container grid gap-8 md:grid-cols-4">
       <div>
         <img src={logo} alt="Pennyekart" className="mb-4 h-8" />
@@ -30,6 +35,7 @@ const Footer = () => (
       <LegalLinks showDelete className="mt-2" />
     </div>
   </footer>
-);
+  );
+};
 
 export default Footer;

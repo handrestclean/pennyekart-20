@@ -21,7 +21,7 @@ import { useAreaProducts } from "@/hooks/useAreaProducts";
 import { useSectionProducts } from "@/hooks/useSectionProducts";
 import { useDisplaySettings } from "@/hooks/useDisplaySettings";
 import { useUiTheme } from "@/hooks/useUiTheme";
-import { ThemeSectionKey } from "@/lib/uiThemes";
+import { ThemeSectionKey, bannerBackgroundStyle } from "@/lib/uiThemes";
 import { supabase } from "@/integrations/supabase/client";
 
 const sectionOrder = ["featured", "sponsors", "most_ordered", "new_arrivals", "low_budget"];
@@ -277,7 +277,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen pb-16 md:pb-0">
-      <header className="sticky top-0 z-50">
+      <header className="sticky top-0 z-50" style={bannerBackgroundStyle(themeConfig.header)}>
         <PlatformSelector selected={platform} onSelect={handlePlatformSelect} />
         <SearchBar />
       </header>

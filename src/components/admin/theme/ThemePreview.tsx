@@ -77,6 +77,7 @@ const ThemePreview = ({ config }: { config: UiThemeConfig }) => {
           className={config.header.sticky ? "sticky top-0 z-10" : ""}
           style={{
             background: headerBackground(config),
+            ...(bannerBackgroundStyle(config.header) ?? {}),
             color: config.header.style === "transparent" ? config.colors.foreground : config.colors.headerText,
             minHeight: Math.max(56, config.header.height / 2),
           }}
@@ -192,6 +193,15 @@ const ThemePreview = ({ config }: { config: UiThemeConfig }) => {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Footer */}
+        <div
+          className="mt-4 px-4 py-4 text-center text-[10px]"
+          style={{ background: config.colors.card, ...(bannerBackgroundStyle(config.footer) ?? {}), color: config.footer?.bgImageUrl ? "#fff" : undefined }}
+        >
+          <p className="font-semibold">Pennyekart</p>
+          <p className="opacity-80">© 2026 Pennyekart. All rights reserved.</p>
         </div>
 
         {/* Bottom navigation */}
